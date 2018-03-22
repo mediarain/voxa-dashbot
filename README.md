@@ -20,7 +20,10 @@ Usage
 
 ```javascript
 
+const Voxa = require('voxa');
 const voxaDashbot = require('voxa-dashbot');
+
+const skill = new Voxa(voxaOptions);
 
 const dashbotConfig = {
   api_key: '<dashbot api_key>',
