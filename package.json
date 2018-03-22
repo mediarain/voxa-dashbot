@@ -1,0 +1,54 @@
+{
+  "name": "voxa-dashbot",
+  "version": "0.1.2",
+  "description": "Integrate Dashbot analytics into your Alexa apps using the voxa framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "istanbul cover _mocha -- --recursive tests",
+    "test-ci": "JUNIT_REPORT_PATH=junit.xml istanbul cover _mocha -- --recursive --colors --reporter mocha-jenkins-reporter tests",
+    "cobertura": "istanbul report cobertura --root coverage",
+    "lint": "eslint lib test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mediarain/voxa-dashbot.git"
+  },
+  "keywords": [
+    "alexa",
+    "skills",
+    "apps",
+    "framework",
+    "echo",
+    "amazon",
+    "voxa",
+    "analytics",
+    "dashbot"
+  ],
+  "author": "Rain Agency <npm@rain.agency> (http://rain.agency)",
+  "engines": {
+    "node": "6.10"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "dashbot": "^9.5.0",
+    "debug": "^2.6.9",
+    "lodash": "^4.17.5"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "eslint": "3.15.0",
+    "eslint-config-airbnb-base": "11.1.0",
+    "eslint-plugin-import": "2.2.0",
+    "istanbul": "^0.4.5",
+    "mocha": "3.2.0",
+    "mocha-jenkins-reporter": "0.3.7",
+    "nock": "^9.2.3",
+    "simple-mock": "^0.7.3",
+    "voxa": "^2.0.0"
+  },
+  "bugs": {
+    "url": "https://github.com/mediarain/voxa-dashbot/issues"
+  },
+  "homepage": "https://github.com/mediarain/voxa-dashbot#readme"
+}
