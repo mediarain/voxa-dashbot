@@ -7,7 +7,8 @@
     "test": "istanbul cover _mocha -- --recursive tests",
     "test-ci": "JUNIT_REPORT_PATH=junit.xml istanbul cover _mocha -- --recursive --colors --reporter mocha-jenkins-reporter tests",
     "cobertura": "istanbul report cobertura --root coverage",
-    "lint": "eslint lib test"
+    "lint": "eslint --fix lib/ tests/",
+    "lint-fix": "eslint lib/ tests/"
   },
   "repository": {
     "type": "git",

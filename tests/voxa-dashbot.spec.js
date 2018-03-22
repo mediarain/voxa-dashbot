@@ -2,9 +2,6 @@
 
 const _ = require('lodash');
 const chai = require('chai');
-const Dashbot = require('dashbot');
-
-const fetchMock = require('fetch-mock');
 const simple = require('simple-mock');
 const nock = require('nock');
 const Voxa = require('voxa');
@@ -12,6 +9,7 @@ const Voxa = require('voxa');
 const voxaDashbot = require('../lib/Voxa-Dashbot');
 const views = require('./views');
 const version = require('../package').dependencies.dashbot.replace('^', '');
+
 console.log('DASHBOT VERSION', version);
 
 const expect = chai.expect;
