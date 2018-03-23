@@ -18,9 +18,9 @@ const dashbotConfig = {
   api_key: 'some_api_key',
 };
 
-describe('Voxa-Dashbot plugin', () => {
-  let voxaStateMachine;
+let voxaStateMachine;
 
+describe('Voxa-Dashbot plugin', () => {
   beforeEach(() => {
     voxaStateMachine = new Voxa({ views });
 
@@ -33,6 +33,7 @@ describe('Voxa-Dashbot plugin', () => {
 
   afterEach(() => {
     simple.restore();
+    nock.cleanAll();
   });
 
   it('should register DashbotAnalytics on LaunchRequest', () => {
@@ -182,7 +183,10 @@ describe('Voxa-Dashbot plugin', () => {
       },
     };
 
-    voxaDashbot(voxaStateMachine, Object.assign({ ignoreUsers: ['user-id'] }, dashbotConfig));
+    const ignoreUsersConfig = _.cloneDeep(dashbotConfig);
+    ignoreUsersConfig.ignoreUsers = ['user-id'];
+
+    voxaDashbot(voxaStateMachine, ignoreUsersConfig);
     return voxaStateMachine.execute(event)
       .then((reply) => {
         expect(reply.version).to.equal('1.0');
@@ -245,6 +249,47 @@ describe('Voxa-Dashbot plugin', () => {
     return voxaStateMachine.execute(event)
       .then((reply) => {
         expect(reply.msg.statements[0]).to.equal('An unrecoverable error occurred.');
+      });
+  });
+});
+
+describe('Voxa-Dashbot plugin error', () => {
+  beforeEach(() => {
+    voxaStateMachine = new Voxa({ views });
+
+    nock(DASHBOT_URL)
+      .post(`/track?apiKey=${dashbotConfig.api_key}&type=incoming&platform=alexa&v=${version}-npm`)
+      .reply(400, { bodyUsed: true });
+  });
+
+  afterEach(() => {
+    simple.restore();
+    nock.cleanAll();
+  });
+
+  it('should not record analytics due to Dashbot Error', () => {
+    const spy = simple.spy(() => ({ reply: 'ExitIntent.GeneralExit' }));
+    voxaStateMachine.onSessionEnded(spy);
+
+    const event = {
+      request: {
+        type: 'SessionEndedRequest',
+      },
+      session: {
+        new: false,
+        application: {
+          applicationId: 'appId',
+        },
+        user: {
+          userId: 'user-id',
+        },
+      },
+    };
+
+    voxaDashbot(voxaStateMachine, dashbotConfig);
+    return voxaStateMachine.execute(event)
+      .then((reply) => {
+        expect(reply.version).to.equal('1.0');
       });
   });
 });
