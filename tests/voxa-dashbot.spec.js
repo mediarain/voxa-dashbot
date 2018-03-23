@@ -223,9 +223,6 @@ describe('Voxa-Dashbot plugin', () => {
   });
 
   it('should record sessions terminated due to errors as an error', () => {
-    const spy = simple.spy(() => ({ reply: 'ExitIntent.GeneralExit' }));
-    voxaStateMachine.onSessionEnded(spy);
-
     const event = {
       request: {
         type: 'SessionEndedRequest',
