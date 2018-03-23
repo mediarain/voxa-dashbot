@@ -31,7 +31,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "bluebird": "^3.5.1",
     "dashbot": "^9.5.0",
     "debug": "^2.6.9",
     "lodash": "^4.17.5"
