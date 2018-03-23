@@ -27,7 +27,7 @@
   ],
   "author": "Rain Agency <npm@rain.agency> (http://rain.agency)",
   "engines": {
-    "node": "6.10"
+    "node": ">4.3"
   },
   "license": "MIT",
   "dependencies": {
