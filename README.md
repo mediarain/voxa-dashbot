@@ -1,10 +1,10 @@
-Voxa Dashbot
-===========
+Voxa Dashbot for Alexa Skills
+=============================
 
 [![Build Status](https://travis-ci.org/mediarain/voxa-dashbot.svg?branch=master)](https://travis-ci.org/mediarain/voxa-dashbot)
 [![Coverage Status](https://coveralls.io/repos/github/mediarain/voxa-dashbot/badge.svg?branch=master)](https://coveralls.io/github/mediarain/voxa-dashbot?branch=master)
 
-A [Dashbot](https://www.npmjs.com/package/dashbot) plugin for [voxa](https://mediarain.github.io/voxa/)
+A [Dashbot](https://www.npmjs.com/package/dashbot) plugin for building Alexa Skills with [voxa](https://mediarain.github.io/voxa/)
 
 Installation
 -------------
