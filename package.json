@@ -45,7 +45,7 @@
     "mocha-jenkins-reporter": "0.3.7",
     "nock": "^9.2.3",
     "simple-mock": "^0.7.3",
-    "voxa": "^2.0.0"
+    "voxa": "^2.2.1"
   },
   "bugs": {
     "url": "https://github.com/mediarain/voxa-dashbot/issues"

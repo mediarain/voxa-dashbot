@@ -221,33 +221,6 @@ describe('Voxa-Dashbot plugin', () => {
         expect(reply.version).to.equal('1.0');
       });
   });
-
-  it('should record sessions terminated due to errors as an error', () => {
-    const event = {
-      request: {
-        type: 'SessionEndedRequest',
-        reason: 'ERROR',
-        error: {
-          message: 'my message'
-        }
-      },
-      session: {
-        new: false,
-        application: {
-          applicationId: 'appId',
-        },
-        user: {
-          userId: 'user-id',
-        },
-      },
-    };
-
-    voxaDashbot(voxaStateMachine, dashbotConfig);
-    return voxaStateMachine.execute(event)
-      .then((reply) => {
-        expect(reply.msg.statements[0]).to.equal('An unrecoverable error occurred.');
-      });
-  });
 });
 
 describe('Voxa-Dashbot plugin error', () => {
