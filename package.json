@@ -1,6 +1,6 @@
 {
   "name": "voxa-dashbot",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Integrate Dashbot analytics into your Alexa apps using the voxa framework",
   "main": "index.js",
   "scripts": {
