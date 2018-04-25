@@ -1,6 +1,6 @@
 {
   "name": "voxa-dashbot",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Integrate Dashbot analytics into your Alexa apps using the voxa framework",
   "main": "index.js",
   "scripts": {
@@ -31,9 +31,9 @@
   },
   "license": "MIT",
   "dependencies": {
-    "dashbot": "^9.5.0",
+    "dashbot": "^9.8.0",
     "debug": "^2.6.9",
-    "lodash": "^4.17.5"
+    "lodash": "^4.17.10"
   },
   "devDependencies": {
     "chai": "^3.5.0",
