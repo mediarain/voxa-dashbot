@@ -100,6 +100,39 @@ describe('Voxa-Dashbot plugin', () => {
       });
   });
 
+  it('should register DashbotAnalytics on StopIntent and end the session', () => {
+    const spy = simple.spy(() => ({ reply: 'ExitIntent.GeneralExit' }));
+    voxaStateMachine.onIntent('SomeIntent', spy);
+
+    const event = {
+      request: {
+        type: 'IntentRequest',
+        intent: {
+          name: 'SomeIntent',
+        },
+      },
+      session: {
+        new: false,
+        application: {
+          applicationId: 'appId',
+        },
+        user: {
+          userId: 'user-id',
+        },
+      },
+    };
+
+    voxaDashbot(voxaStateMachine, dashbotConfig);
+    return voxaStateMachine.execute(event)
+      .then((reply) => {
+        expect(spy.called).to.be.true;
+        expect(reply.session.new).to.equal(false);
+        expect(reply.session.attributes.state).to.equal('die');
+        expect(reply.msg.statements).to.have.lengthOf(1);
+        expect(reply.msg.statements[0]).to.equal('Ok. Goodbye.');
+      });
+  });
+
   it('should register DashbotAnalytics on SessionEndedRequest', () => {
     const spy = simple.spy(() => ({ reply: 'ExitIntent.GeneralExit' }));
     voxaStateMachine.onSessionEnded(spy);
