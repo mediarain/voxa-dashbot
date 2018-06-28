@@ -7,8 +7,8 @@
     "test": "istanbul cover _mocha -- --recursive tests",
     "test-ci": "JUNIT_REPORT_PATH=junit.xml istanbul cover _mocha -- --recursive --colors --reporter mocha-jenkins-reporter tests",
     "cobertura": "istanbul report cobertura --root coverage",
-    "lint": "eslint --fix lib/ tests/",
-    "lint-fix": "eslint lib/ tests/"
+    "lint": "eslint lib/ tests/",
+    "lint-fix": "eslint --fix lib/ tests/"
   },
   "repository": {
     "type": "git",
@@ -32,7 +32,7 @@
   "license": "MIT",
   "dependencies": {
     "dashbot": "^9.9.1",
-    "debug": "^2.6.9",
+    "lambda-log": "^1.4.0",
     "lodash": "^4.17.10"
   },
   "devDependencies": {

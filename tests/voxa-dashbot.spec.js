@@ -10,8 +10,6 @@ const voxaDashbot = require('../lib/Voxa-Dashbot');
 const views = require('./views');
 const version = require('../package').dependencies.dashbot.replace('^', '');
 
-console.log('DASHBOT VERSION', version);
-
 const expect = chai.expect;
 const DASHBOT_URL = 'https://tracker.dashbot.io';
 const dashbotConfig = {
