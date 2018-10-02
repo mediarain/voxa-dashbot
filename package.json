@@ -4,11 +4,11 @@
   "description": "Integrate Dashbot analytics into your Alexa apps using the voxa framework",
   "main": "lib/Voxa-Dashbot.js",
   "scripts": {
-    "test": "istanbul cover _mocha -- --recursive tests",
-    "test-ci": "JUNIT_REPORT_PATH=junit.xml istanbul cover _mocha -- --recursive --colors --reporter mocha-jenkins-reporter tests",
-    "cobertura": "istanbul report cobertura --root coverage",
+    "test": "mocha test/*.spec.* test/**/*.spec.*",
+    "test-ci": "nyc mocha --colors --reporter mocha-jenkins-reporter test test/*.spec.* test/**/*.spec.*",
     "lint": "eslint --fix lib/ tests/",
-    "lint-fix": "eslint lib/ tests/"
+    "clean": "rimraf lib/",
+    "prepare": "npm run clean && tsc"
   },
   "repository": {
     "type": "git",
@@ -33,7 +33,6 @@
   "dependencies": {
     "@types/lodash": "^4.14.116",
     "dashbot": "^9.8.0",
-    "debug": "^2.6.9",
     "lodash": "^4.17.10"
   },
   "devDependencies": {
@@ -41,7 +40,11 @@
     "mocha": "3.2.0",
     "mocha-jenkins-reporter": "0.3.7",
     "nock": "^9.2.3",
+    "nyc": "^13.0.1",
+    "rimraf": "^2.6.2",
     "simple-mock": "^0.7.3",
+    "source-map-support": "^0.5.9",
+    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typescript": "^3.1.1",
     "voxa": "^3.0.0-alpha30"
