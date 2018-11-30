@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha test/*.spec.* test/**/*.spec.*",
     "test-ci": "nyc mocha --colors --reporter mocha-jenkins-reporter test test/*.spec.* test/**/*.spec.*",
-    "lint": "eslint --fix lib/ tests/",
+    "lint": "tslint --project tsconfig.json --config tslint.json",
     "clean": "rimraf lib/",
     "prepare": "npm run clean && tsc",
     "report": "nyc report --reporter=json && nyc report --reporter html && nyc report --reporter=lcov && nyc report --reporter=cobertura"
@@ -47,6 +47,7 @@
     "source-map-support": "^0.5.9",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
+    "tslint-no-unused-expression-chai": "^0.1.4",
     "typescript": "^3.1.1",
     "voxa": "3.0.0-alpha38"
   },
