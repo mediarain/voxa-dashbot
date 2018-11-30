@@ -1,14 +1,15 @@
 {
   "name": "voxa-dashbot",
-  "version": "2.0.0-alpha2",
+  "version": "2.0.0-alpha3",
   "description": "Integrate Dashbot analytics into your Alexa apps using the voxa framework",
   "main": "lib/Voxa-Dashbot.js",
   "scripts": {
     "test": "mocha test/*.spec.* test/**/*.spec.*",
     "test-ci": "nyc mocha --colors --reporter mocha-jenkins-reporter test test/*.spec.* test/**/*.spec.*",
-    "lint": "eslint --fix lib/ tests/",
+    "lint": "tslint --project tsconfig.json --config tslint.json",
     "clean": "rimraf lib/",
-    "prepare": "npm run clean && tsc"
+    "prepare": "npm run clean && tsc",
+    "report": "nyc report --reporter=json && nyc report --reporter html && nyc report --reporter=lcov && nyc report --reporter=cobertura"
   },
   "repository": {
     "type": "git",
@@ -40,12 +41,13 @@
     "mocha": "3.2.0",
     "mocha-jenkins-reporter": "0.3.7",
     "nock": "^9.2.3",
-    "nyc": "^13.0.1",
+    "nyc": "^13.1.0",
     "rimraf": "^2.6.2",
     "simple-mock": "^0.7.3",
     "source-map-support": "^0.5.9",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
+    "tslint-no-unused-expression-chai": "^0.1.4",
     "typescript": "^3.1.1",
     "voxa": "3.0.0-alpha38"
   },
