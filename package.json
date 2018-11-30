@@ -8,7 +8,8 @@
     "test-ci": "nyc mocha --colors --reporter mocha-jenkins-reporter test test/*.spec.* test/**/*.spec.*",
     "lint": "eslint --fix lib/ tests/",
     "clean": "rimraf lib/",
-    "prepare": "npm run clean && tsc"
+    "prepare": "npm run clean && tsc",
+    "report": "nyc report --reporter=json && nyc report --reporter html && nyc report --reporter=lcov && nyc report --reporter=cobertura"
   },
   "repository": {
     "type": "git",
@@ -40,7 +41,7 @@
     "mocha": "3.2.0",
     "mocha-jenkins-reporter": "0.3.7",
     "nock": "^9.2.3",
-    "nyc": "^13.0.1",
+    "nyc": "^13.1.0",
     "rimraf": "^2.6.2",
     "simple-mock": "^0.7.3",
     "source-map-support": "^0.5.9",
