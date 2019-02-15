@@ -32,7 +32,9 @@ const defaultConfig = {
 const dashbotIntegrations: any = {
   alexa: "alexa",
   botframework: "generic",
-  dialogflow: "google",
+  dialogflow: "google", // DEPRECATED
+  facebook: "facebook",
+  google: "google",
 };
 
 export interface IVoxaDashbotConfig {
@@ -41,7 +43,10 @@ export interface IVoxaDashbotConfig {
   botframework?: string;
   debug?: boolean;
   dialogflow?: string;
+  facebook?: string;
+  redact?: boolean;
   suppressSending?: boolean;
+  timeout?: number;
 }
 
 export function register(skill: VoxaApp, config: IVoxaDashbotConfig) {
@@ -50,6 +55,8 @@ export function register(skill: VoxaApp, config: IVoxaDashbotConfig) {
   const dashbotConfig = {
     debug: pluginConfig.debug,
     printErrors: true,
+    redact: pluginConfig.redact,
+    timeout: pluginConfig.timeout,
   };
 
   skill.onRequestStarted(trackIncoming);
