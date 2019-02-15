@@ -44,6 +44,7 @@ export interface IVoxaDashbotConfig {
   debug?: boolean;
   dialogflow?: string;
   facebook?: string;
+  printErrors?: boolean;
   redact?: boolean;
   suppressSending?: boolean;
   timeout?: number;
@@ -54,7 +55,7 @@ export function register(skill: VoxaApp, config: IVoxaDashbotConfig) {
 
   const dashbotConfig = {
     debug: pluginConfig.debug,
-    printErrors: true,
+    printErrors: pluginConfig.printErrors,
     redact: pluginConfig.redact,
     timeout: pluginConfig.timeout,
   };
