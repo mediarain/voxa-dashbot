@@ -33,7 +33,6 @@ const dashbotIntegrations: any = {
   alexa: "alexa",
   botframework: "generic",
   dialogflow: "google", // DEPRECATED
-  facebook: "facebook",
   google: "google",
 };
 
@@ -43,7 +42,6 @@ export interface IVoxaDashbotConfig {
   botframework?: string;
   debug?: boolean;
   dialogflow?: string;
-  facebook?: string;
   printErrors?: boolean;
   redact?: boolean;
   suppressSending?: boolean;
