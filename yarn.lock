@@ -2681,7 +2681,7 @@ verror@1.10.0:
     core-util-is "1.0.2"
     extsprintf "^1.2.0"
 
-voxa@3.1.0:
+voxa@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/voxa/-/voxa-3.1.0.tgz#3ed4fe39459257dbcc275d3821c97353f3806e4b"
   integrity sha512-ibpGZL5r3ajtJG0PtlMOFW9xvQLTOblQN9cXVJEDokkncmgR8c0Q3URwUPYAdAd0ec1jdonlEgvFabdg8xJivw==

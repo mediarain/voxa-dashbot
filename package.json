@@ -49,10 +49,10 @@
     "tslint": "^5.16.0",
     "tslint-no-unused-expression-chai": "^0.1.4",
     "typescript": "^3.4.5",
-    "voxa": "3.1.0"
+    "voxa": "^3.1.0"
   },
   "peerDependencies": {
-    "voxa": "3.1.0"
+    "voxa": "^3.1.0"
   },
   "bugs": {
     "url": "https://github.com/VoxaAI/voxa-dashbot/issues"
