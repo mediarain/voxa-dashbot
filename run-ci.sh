@@ -2,7 +2,7 @@
 set -ev
 
 npm run test-ci
-npm run report
+npm run cobertura
 npm run lint
 
 if [ "${CI}" = "true" ]; then
