@@ -5,6 +5,9 @@ export interface IVoxaDashbotConfig {
     botframework?: string;
     debug?: boolean;
     dialogflow?: string;
+    printErrors?: boolean;
+    redact?: boolean;
     suppressSending?: boolean;
+    timeout?: number;
 }
 export declare function register(skill: VoxaApp, config: IVoxaDashbotConfig): void;

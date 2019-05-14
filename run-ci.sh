@@ -1,9 +1,9 @@
 #!/bin/bash
 set -ev
 
-yarn test-ci
-yarn report
-yarn lint
+npm run test-ci
+npm run cobertura
+npm run lint
 
 if [ "${CI}" = "true" ]; then
   npm install coveralls
