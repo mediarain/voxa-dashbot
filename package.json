@@ -1,18 +1,19 @@
 {
   "name": "voxa-dashbot",
-  "version": "0.1.8",
+  "version": "2.0.2",
   "description": "Integrate Dashbot analytics into your Alexa apps using the voxa framework",
-  "main": "index.js",
+  "main": "lib/Voxa-Dashbot.js",
   "scripts": {
-    "test": "istanbul cover _mocha -- --recursive tests",
-    "test-ci": "JUNIT_REPORT_PATH=junit.xml istanbul cover _mocha -- --recursive --colors --reporter mocha-jenkins-reporter tests",
-    "cobertura": "istanbul report cobertura --root coverage",
-    "lint": "eslint lib/ tests/",
-    "lint-fix": "eslint --fix lib/ tests/"
+    "test": "istanbul cover _mocha -- --recursive test",
+    "test-ci": "JUNIT_REPORT_PATH=junit.xml istanbul cover _mocha -- --recursive --colors --reporter mocha-jenkins-reporter test",
+    "lint": "tslint --project tsconfig.json --config tslint.json",
+    "clean": "rimraf lib/",
+    "prepare": "npm run clean && tsc",
+    "cobertura": "istanbul report cobertura --root coverage"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mediarain/voxa-dashbot.git"
+    "url": "git+https://github.com/VoxaAI/voxa-dashbot.git"
   },
   "keywords": [
     "alexa",
@@ -27,28 +28,34 @@
   ],
   "author": "Rain Agency <npm@rain.agency> (http://rain.agency)",
   "engines": {
-    "node": ">=4.3"
+    "node": ">=8.10"
   },
   "license": "MIT",
   "dependencies": {
-    "dashbot": "^9.9.1",
-    "lambda-log": "^1.4.0",
-    "lodash": "^4.17.10"
+    "@types/lodash": "^4.14.126",
+    "dashbot": "^10.4.0",
+    "lodash": "^4.17.11"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
-    "eslint": "3.15.0",
-    "eslint-config-airbnb-base": "11.1.0",
-    "eslint-plugin-import": "2.2.0",
+    "chai": "^4.2.0",
     "istanbul": "^0.4.5",
-    "mocha": "3.2.0",
-    "mocha-jenkins-reporter": "0.3.7",
-    "nock": "^9.2.3",
-    "simple-mock": "^0.7.3",
-    "voxa": "^2.2.1"
+    "mocha": "6.1.4",
+    "mocha-jenkins-reporter": "0.4.1",
+    "nock": "^10.0.6",
+    "rimraf": "^2.6.3",
+    "simple-mock": "^0.8.0",
+    "source-map-support": "^0.5.12",
+    "ts-node": "^8.1.0",
+    "tslint": "^5.16.0",
+    "tslint-no-unused-expression-chai": "^0.1.4",
+    "typescript": "^3.4.5",
+    "voxa": "^3.1.0"
+  },
+  "peerDependencies": {
+    "voxa": "^3.1.0"
   },
   "bugs": {
-    "url": "https://github.com/mediarain/voxa-dashbot/issues"
+    "url": "https://github.com/VoxaAI/voxa-dashbot/issues"
   },
-  "homepage": "https://github.com/mediarain/voxa-dashbot#readme"
+  "homepage": "https://github.com/VoxaAI/voxa-dashbot#readme"
 }
