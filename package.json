@@ -9,7 +9,9 @@
     "lint": "tslint --project tsconfig.json --config tslint.json",
     "clean": "rimraf lib/",
     "prepare": "npm run clean && tsc",
-    "cobertura": "istanbul report cobertura --root coverage"
+    "cobertura": "istanbul report cobertura --root coverage",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "repository": {
     "type": "git",
@@ -34,7 +36,8 @@
   "dependencies": {
     "@types/lodash": "^4.14.129",
     "dashbot": "^10.4.0",
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.11",
+    "snyk": "^1.189.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",
@@ -57,5 +60,6 @@
   "bugs": {
     "url": "https://github.com/VoxaAI/voxa-dashbot/issues"
   },
-  "homepage": "https://github.com/VoxaAI/voxa-dashbot#readme"
+  "homepage": "https://github.com/VoxaAI/voxa-dashbot#readme",
+  "snyk": true
 }
