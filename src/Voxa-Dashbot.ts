@@ -60,12 +60,15 @@ export function register(skill: VoxaApp, config: IVoxaDashbotConfig) {
   skill.onRequestStarted(trackIncoming);
   skill.onBeforeReplySent(trackOutgoing);
 
-  function trackIncoming(voxaEvent: IVoxaEvent) {
-    if (_.includes(pluginConfig.ignoreUsers, voxaEvent.user.userId)) {
-      return Promise.resolve(null);
+  async function trackIncoming(voxaEvent: IVoxaEvent) {
+    for (const ignoreRule of pluginConfig.ignoreUsers) {
+      if (voxaEvent.user.userId.match(ignoreRule)) {
+        return;
+      }
     }
+
     if (pluginConfig.suppressSending) {
-      return Promise.resolve(null);
+      return;
     }
     const { rawEvent, platform } = voxaEvent;
     const apiKey = _.get(pluginConfig, platform.name) || pluginConfig.api_key;

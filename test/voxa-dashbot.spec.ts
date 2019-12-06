@@ -199,6 +199,36 @@ describe("Voxa-Dashbot plugin", () => {
     });
   });
 
+  it("should support regexex for ignored user ids", async () => {
+    const spy = simple.spy((_voxaEvent, reply) => {
+      return reply;
+    });
+    voxaApp.onSessionEnded(spy);
+
+    const event = {
+      request: {
+        type: "SessionEndedRequest"
+      },
+      session: {
+        new: false,
+        application: {
+          applicationId: "appId"
+        },
+        user: {
+          userId: "user-id-with-something-random-appended"
+        }
+      }
+    };
+
+    const ignoreUsersConfig = _.cloneDeep(dashbotConfig);
+    ignoreUsersConfig.ignoreUsers = [/^user-id.*$/];
+
+    register(voxaApp, ignoreUsersConfig);
+    const reply = await alexaSkill.execute(event as any);
+    expect(reply.version).to.equal("1.0");
+    expect(nockScope.isDone()).to.be.false;
+  });
+
   it("should not record analytics if suppressSending === true", async () => {
     const spy = simple.spy((_voxaEvent, reply) => reply);
     voxaApp.onSessionEnded(spy);
