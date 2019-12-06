@@ -1,25 +1,25 @@
 "use strict";
 
-const _ = require("lodash");
-const chai = require("chai");
-const simple = require("simple-mock");
-const nock = require("nock");
-const { VoxaApp, AlexaPlatform } = require("voxa");
+import _ from "lodash";
+import chai from "chai";
+import simple from "simple-mock";
+import nock from "nock";
+import { VoxaApp, AlexaPlatform } from "voxa";
 
-const { register } = require("../lib/Voxa-Dashbot");
-const views = require("./views");
-const version = require("../package").dependencies.dashbot.replace("^", "");
+import { register } from "../src/Voxa-Dashbot";
+import * as views from "./views";
 
 const expect = chai.expect;
 const DASHBOT_URL = "https://tracker.dashbot.io";
-const dashbotConfig = {
+const dashbotConfig: any = {
   api_key: "some_api_key"
 };
 
 describe("Voxa-Dashbot plugin", () => {
-  let voxaApp;
-  let alexaSkill;
-  let nockScope;
+  let voxaApp: VoxaApp;
+  let alexaSkill: AlexaPlatform;
+  let nockScope: nock.Scope;
+
   beforeEach(() => {
     voxaApp = new VoxaApp({ views });
     alexaSkill = new AlexaPlatform(voxaApp);
@@ -63,7 +63,7 @@ describe("Voxa-Dashbot plugin", () => {
     };
 
     register(voxaApp, dashbotConfig);
-    const reply = await alexaSkill.execute(event);
+    const reply = await alexaSkill.execute(event as any);
 
     expect(spy.called).to.be.true;
     expect(reply.sessionAttributes.state).to.equal("entry");
@@ -98,7 +98,7 @@ describe("Voxa-Dashbot plugin", () => {
     };
 
     register(voxaApp, dashbotConfig);
-    const reply = await alexaSkill.execute(event);
+    const reply = await alexaSkill.execute(event as any);
     expect(spy.called).to.be.true;
     expect(reply.sessionAttributes.state).to.equal("entry");
     expect(reply.speech).to.include("What time is it?");
@@ -106,7 +106,7 @@ describe("Voxa-Dashbot plugin", () => {
   });
 
   it("should register DashbotAnalytics on SessionEndedRequest", async () => {
-    const spy = simple.spy((voxaEvent, reply) => {
+    const spy = simple.spy((_, reply) => {
       return reply;
     });
 
@@ -128,7 +128,7 @@ describe("Voxa-Dashbot plugin", () => {
     };
 
     register(voxaApp, dashbotConfig);
-    const reply = await alexaSkill.execute(event);
+    const reply = await alexaSkill.execute(event as any);
     expect(spy.called).to.be.true;
     expect(reply.version).to.equal("1.0");
     expect(nockScope.isDone()).to.be.true;
@@ -140,7 +140,7 @@ describe("Voxa-Dashbot plugin", () => {
     });
     voxaApp.onIntent("ErrorIntent", intentSpy);
 
-    const spy = simple.spy((voxaEvent, error, voxaReply) => {
+    const spy = simple.spy((_voxaEvent, _error, voxaReply) => {
       return voxaReply;
     });
     voxaApp.onError(spy);
@@ -164,13 +164,13 @@ describe("Voxa-Dashbot plugin", () => {
     };
 
     register(voxaApp, dashbotConfig);
-    const reply = await alexaSkill.execute(event);
+    await alexaSkill.execute(event as any);
     expect(spy.called).to.be.true;
     expect(nockScope.isDone()).to.be.true;
   });
 
-  it("should not record analytics if the user is ignored", () => {
-    const spy = simple.spy((voxaEvent, reply) => {
+  it("should not record analytics if the user is ignored", async () => {
+    const spy = simple.spy((_voxaEvent, reply) => {
       return reply;
     });
     voxaApp.onSessionEnded(spy);
@@ -194,13 +194,13 @@ describe("Voxa-Dashbot plugin", () => {
     ignoreUsersConfig.ignoreUsers = ["user-id"];
 
     register(voxaApp, ignoreUsersConfig);
-    return alexaSkill.execute(event).then(reply => {
+    return alexaSkill.execute(event as any).then(reply => {
       expect(reply.version).to.equal("1.0");
     });
   });
 
-  it("should not record analytics if suppressSending === true", () => {
-    const spy = simple.spy((voxaEvent, reply) => reply);
+  it("should not record analytics if suppressSending === true", async () => {
+    const spy = simple.spy((_voxaEvent, reply) => reply);
     voxaApp.onSessionEnded(spy);
 
     const event = {
@@ -222,13 +222,13 @@ describe("Voxa-Dashbot plugin", () => {
     suppressSendingConfig.suppressSending = true;
 
     register(voxaApp, suppressSendingConfig);
-    return alexaSkill.execute(event).then(reply => {
+    return alexaSkill.execute(event as any).then(reply => {
       expect(reply.version).to.equal("1.0");
     });
   });
 
-  it("should not record analytics due to Dashbot Error", () => {
-    const spy = simple.spy((voxaEvent, reply) => reply);
+  it("should not record analytics due to Dashbot Error", async () => {
+    const spy = simple.spy((_voxaEvent, reply) => reply);
     voxaApp.onSessionEnded(spy);
 
     const event = {
@@ -247,7 +247,7 @@ describe("Voxa-Dashbot plugin", () => {
     };
 
     register(voxaApp, dashbotConfig);
-    return alexaSkill.execute(event).then(reply => {
+    return alexaSkill.execute(event as any).then(reply => {
       expect(reply.version).to.equal("1.0");
     });
   });

@@ -4,12 +4,11 @@
   "description": "Integrate Dashbot analytics into your Alexa apps using the voxa framework",
   "main": "lib/Voxa-Dashbot.js",
   "scripts": {
-    "test": "istanbul cover _mocha -- --recursive test",
-    "test-ci": "JUNIT_REPORT_PATH=junit.xml istanbul cover _mocha -- --recursive --colors --reporter mocha-jenkins-reporter test",
-    "lint": "tslint --project tsconfig.json --config tslint.json",
+    "test": "nyc --reporter=html --reporter=text --report-dir=reports mocha  test/",
+    "lint": "tslint --config tslint.json --project tsconfig.json",
     "clean": "rimraf lib/",
     "prepare": "npm run clean && tsc",
-    "cobertura": "istanbul report cobertura --root coverage"
+    "cobertura": "nyc report cobertura --root coverage"
   },
   "repository": {
     "type": "git",
@@ -33,29 +32,49 @@
   "license": "MIT",
   "dependencies": {
     "@types/lodash": "^4.14.129",
-    "dashbot": "^10.4.0",
+    "dashbot": "^11.1.0",
     "lodash": "^4.17.11"
   },
   "devDependencies": {
+    "@types/chai": "^4.2.6",
+    "@types/mocha": "^5.2.7",
+    "@types/simple-mock": "^0.8.1",
     "chai": "^4.2.0",
-    "istanbul": "^0.4.5",
-    "mocha": "6.1.4",
-    "mocha-jenkins-reporter": "0.4.1",
-    "nock": "^10.0.6",
-    "rimraf": "^2.6.3",
+    "coveralls": "^3.0.9",
+    "husky": "^3.1.0",
+    "mocha": "^6.2.2",
+    "mocha-jenkins-reporter": "^0.4.2",
+    "nock": "^11.7.0",
+    "nyc": "^14.1.1",
+    "prettier": "^1.19.1",
+    "pretty-quick": "^2.0.1",
+    "rimraf": "^3.0.0",
     "simple-mock": "^0.8.0",
     "source-map-support": "^0.5.12",
     "ts-node": "^8.1.0",
     "tslint": "^5.16.0",
+    "tslint-config-prettier": "^1.18.0",
     "tslint-no-unused-expression-chai": "^0.1.4",
+    "tslint-plugin-prettier": "^2.0.1",
     "typescript": "^3.4.5",
-    "voxa": "^3.1.0"
+    "voxa": "^3.3.0"
   },
   "peerDependencies": {
-    "voxa": "^3.1.0"
+    "voxa": "^3.3.0"
   },
   "bugs": {
     "url": "https://github.com/VoxaAI/voxa-dashbot/issues"
   },
-  "homepage": "https://github.com/VoxaAI/voxa-dashbot#readme"
+  "homepage": "https://github.com/VoxaAI/voxa-dashbot#readme",
+  "husky": {
+    "hooks": {
+      "pre-commit": "npx pretty-quick --staged && npm run lint && npm test && npx tsc"
+    }
+  },
+  "nyc": {
+    "extension": [
+      ".js",
+      ".ts"
+    ]
+  }
 }
