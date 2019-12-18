@@ -20,20 +20,19 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import * as _ from "lodash";
+import _ from "lodash";
 import { IVoxaEvent, IVoxaReply, VoxaApp } from "voxa";
-/* tslint:disable-next-line */
-const DashbotAnalytics = require("dashbot");
+import DashbotAnalytics from "dashbot";
 
 const defaultConfig = {
-  ignoreUsers: [],
+  ignoreUsers: []
 };
 
 const dashbotIntegrations: any = {
   alexa: "alexa",
   botframework: "generic",
   dialogflow: "google", // DEPRECATED
-  google: "google",
+  google: "google"
 };
 
 export interface IVoxaDashbotConfig {
@@ -55,18 +54,21 @@ export function register(skill: VoxaApp, config: IVoxaDashbotConfig) {
     debug: pluginConfig.debug,
     printErrors: pluginConfig.printErrors,
     redact: pluginConfig.redact,
-    timeout: pluginConfig.timeout,
+    timeout: pluginConfig.timeout
   };
 
   skill.onRequestStarted(trackIncoming);
   skill.onBeforeReplySent(trackOutgoing);
 
-  function trackIncoming(voxaEvent: IVoxaEvent) {
-    if (_.includes(pluginConfig.ignoreUsers, voxaEvent.user.userId)) {
-      return Promise.resolve(null);
+  async function trackIncoming(voxaEvent: IVoxaEvent) {
+    for (const ignoreRule of pluginConfig.ignoreUsers) {
+      if (voxaEvent.user.userId.match(ignoreRule)) {
+        return;
+      }
     }
+
     if (pluginConfig.suppressSending) {
-      return Promise.resolve(null);
+      return;
     }
     const { rawEvent, platform } = voxaEvent;
     const apiKey = _.get(pluginConfig, platform.name) || pluginConfig.api_key;
