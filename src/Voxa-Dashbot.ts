@@ -20,9 +20,17 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import DashbotAnalytics from "dashbot";
 import _ from "lodash";
 import { IVoxaEvent, IVoxaReply, VoxaApp } from "voxa";
-import DashbotAnalytics from "dashbot";
+import rp from "request-promise";
+import {
+  IDashbotRevenueEvent,
+  IDashbotReferralEvent,
+  IDashbotShareEvent,
+  IDashbotPageLaunchEvent,
+  IDashbotCustomEvent
+} from "./events";
 
 const defaultConfig = {
   ignoreUsers: []
@@ -47,7 +55,7 @@ export interface IVoxaDashbotConfig {
   timeout?: number;
 }
 
-export function register(skill: VoxaApp, config: IVoxaDashbotConfig) {
+export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
   const pluginConfig = _.merge({}, defaultConfig, config);
 
   const dashbotConfig = {
@@ -57,8 +65,85 @@ export function register(skill: VoxaApp, config: IVoxaDashbotConfig) {
     timeout: pluginConfig.timeout
   };
 
-  skill.onRequestStarted(trackIncoming);
-  skill.onBeforeReplySent(trackOutgoing);
+  voxaApp.onRequestStarted(initDashbot);
+  voxaApp.onRequestStarted(trackIncoming);
+  voxaApp.onBeforeReplySent(trackOutgoing);
+
+  const alexaRequestTypes = [
+    "AudioPlayer.PlaybackStarted",
+    "AudioPlayer.PlaybackFinished",
+    "AudioPlayer.PlaybackNearlyFinished",
+    "AudioPlayer.PlaybackStopped",
+    "AudioPlayer.PlaybackFailed",
+    "System.ExceptionEncountered",
+    "PlaybackController.NextCommandIssued",
+    "PlaybackController.PauseCommandIssued",
+    "PlaybackController.PlayCommandIssued",
+    "PlaybackController.PreviousCommandIssued",
+    "AlexaSkillEvent.ProactiveSubscriptionChanged",
+    "AlexaSkillEvent.SkillAccountLinked",
+    "AlexaSkillEvent.SkillEnabled",
+    "AlexaSkillEvent.SkillDisabled",
+    "AlexaSkillEvent.SkillPermissionAccepted",
+    "AlexaSkillEvent.SkillPermissionChanged",
+    "AlexaHouseholdListEvent.ItemsCreated",
+    "AlexaHouseholdListEvent.ItemsUpdated",
+    "AlexaHouseholdListEvent.ItemsDeleted",
+    "Connections.Response",
+    "Display.ElementSelected",
+    "CanFulfillIntentRequest",
+    "GameEngine.InputHandlerEvent",
+    "Alexa.Presentation.APL.UserEvent",
+    "Messaging.MessageReceived"
+  ];
+
+  for (const requestType of alexaRequestTypes) {
+    if (_.has(voxaApp, `on${requestType}`)) {
+      voxaApp[`on${requestType}`](initDashbot);
+      voxaApp[`on${requestType}`](trackIncoming);
+      voxaApp[`on${requestType}`](trackOutgoing);
+    }
+  }
+
+  async function initDashbot(voxaEvent: IVoxaEvent) {
+    const { platform } = voxaEvent;
+    const apiKey = _.get(pluginConfig, platform.name) || pluginConfig.api_key;
+
+    voxaEvent.dashbot = {
+      trackEvent: async function(
+        dashbotEvent:
+          | IDashbotRevenueEvent
+          | IDashbotReferralEvent
+          | IDashbotShareEvent
+          | IDashbotPageLaunchEvent
+          | IDashbotCustomEvent
+      ) {
+        if (pluginConfig.suppressSending) {
+          return;
+        }
+
+        const requestBody = {
+          ...dashbotEvent,
+          ...{
+            userId: voxaEvent.user.userId,
+            conversationId: voxaEvent.session.sessionId
+          }
+        };
+
+        await rp.post({
+          uri: "https://tracker.dashbot.io/track",
+          qs: {
+            platform: dashbotIntegrations[platform.name],
+            v: "11.1.0-rest",
+            type: "event",
+            apiKey: apiKey
+          },
+          json: true,
+          body: requestBody
+        });
+      }
+    };
+  }
 
   async function trackIncoming(voxaEvent: IVoxaEvent) {
     for (const ignoreRule of pluginConfig.ignoreUsers) {
@@ -76,11 +161,11 @@ export function register(skill: VoxaApp, config: IVoxaDashbotConfig) {
     const Dashbot = DashbotAnalytics(apiKey, dashbotConfig)[
       dashbotIntegrations[platform.name]
     ];
-    // PROCESSING INCOMING RESPONSE
-    return Dashbot.logIncoming(rawEvent);
+
+    await Dashbot.logIncoming(rawEvent);
   }
 
-  function trackOutgoing(voxaEvent: IVoxaEvent, reply: IVoxaReply) {
+  async function trackOutgoing(voxaEvent: IVoxaEvent, reply: IVoxaReply) {
     if (_.includes(pluginConfig.ignoreUsers, voxaEvent.user.userId)) {
       return Promise.resolve(null);
     }
@@ -93,7 +178,7 @@ export function register(skill: VoxaApp, config: IVoxaDashbotConfig) {
     const Dashbot = DashbotAnalytics(apiKey, dashbotConfig)[
       dashbotIntegrations[platform.name]
     ];
-    // PROCESSING INCOMING RESPONSE
-    return Dashbot.logOutgoing(rawEvent, reply);
+
+    await Dashbot.logOutgoing(rawEvent, reply);
   }
 }

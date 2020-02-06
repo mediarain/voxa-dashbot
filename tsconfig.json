@@ -9,9 +9,10 @@
     "outDir": "./lib/",
     "moduleResolution": "node",
     "lib": ["es2015"],
-    "types": ["node", "mocha"],
     "esModuleInterop": true,
-    "inlineSources": true
+    "inlineSources": true,
+    "declaration": true,
+    "typeRoots": ["./node_modules/@types", "./src/@types"]
   },
-  "include": ["./src/"]
+  "include": ["./src/**/*"]
 }
