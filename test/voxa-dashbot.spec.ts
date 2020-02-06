@@ -6,7 +6,7 @@ import simple from "simple-mock";
 import nock from "nock";
 import { VoxaApp, AlexaPlatform } from "voxa";
 
-import { register } from "../src/Voxa-Dashbot";
+import { register } from "../src";
 import * as views from "./views";
 
 const expect = chai.expect;
@@ -280,5 +280,149 @@ describe("Voxa-Dashbot plugin", () => {
     return alexaSkill.execute(event as any).then(reply => {
       expect(reply.version).to.equal("1.0");
     });
+  });
+
+  it("should not record analytics due to Dashbot Error", async () => {
+    const spy = simple.spy((_voxaEvent, reply) => reply);
+    voxaApp.onSessionEnded(spy);
+
+    const event = {
+      request: {
+        type: "SessionEndedRequest"
+      },
+      session: {
+        new: false,
+        application: {
+          applicationId: "appId"
+        },
+        user: {
+          userId: "user-id"
+        }
+      }
+    };
+
+    register(voxaApp, dashbotConfig);
+    return alexaSkill.execute(event as any).then(reply => {
+      expect(reply.version).to.equal("1.0");
+    });
+  });
+
+  const alexaRequestTypes = [
+    "AudioPlayer.PlaybackStarted",
+    "AudioPlayer.PlaybackFinished",
+    "AudioPlayer.PlaybackNearlyFinished",
+    "AudioPlayer.PlaybackStopped",
+    "AudioPlayer.PlaybackFailed",
+    "System.ExceptionEncountered",
+    "PlaybackController.NextCommandIssued",
+    "PlaybackController.PauseCommandIssued",
+    "PlaybackController.PlayCommandIssued",
+    "PlaybackController.PreviousCommandIssued",
+    "AlexaSkillEvent.ProactiveSubscriptionChanged",
+    "AlexaSkillEvent.SkillAccountLinked",
+    "AlexaSkillEvent.SkillEnabled",
+    "AlexaSkillEvent.SkillDisabled",
+    "AlexaSkillEvent.SkillPermissionAccepted",
+    "AlexaSkillEvent.SkillPermissionChanged",
+    "AlexaHouseholdListEvent.ItemsCreated",
+    "AlexaHouseholdListEvent.ItemsUpdated",
+    "AlexaHouseholdListEvent.ItemsDeleted",
+    "Connections.Response",
+    "Display.ElementSelected",
+    "GameEngine.InputHandlerEvent",
+    "Alexa.Presentation.APL.UserEvent",
+    "Messaging.MessageReceived"
+  ];
+
+  for (const requestType of alexaRequestTypes) {
+    it(`should record alexa ${requestType}`, async () => {
+      const spy = simple.spy((_request, reply) => reply || {});
+
+      voxaApp[`on${requestType}`](spy);
+      voxaApp.onIntent(requestType, spy);
+
+      const event = {
+        request: {
+          type: requestType,
+          locale: "en-us"
+        },
+        session: {
+          new: true,
+          sessionId: "some",
+          application: {
+            applicationId: "appId"
+          },
+          user: {
+            userId: "user-id"
+          }
+        }
+      };
+
+      register(voxaApp, dashbotConfig);
+      await alexaSkill.execute(event as any);
+
+      expect(spy.called).to.be.true;
+      expect(nockScope.isDone()).to.be.true;
+    });
+  }
+
+  it("should support sending a custom event", async () => {
+    nock.cleanAll();
+    nockScope = nock(DASHBOT_URL)
+      .post("/track")
+      .query(true)
+      .reply(200, "MOCK DATA")
+
+      .post("/track", {
+        type: "customEvent",
+        name: "CUSTOM EVENT",
+        userId: "user-id",
+        conversationId: "some"
+      })
+      .query(true)
+      .reply(200, "MOCK DATA")
+
+      .post("/track")
+      .query(true)
+      .reply(200, "MOCK DATA");
+
+    const spy = simple.spy(async request => {
+      await request.dashbot.trackEvent({
+        type: "customEvent",
+        name: "CUSTOM EVENT"
+      });
+      return {
+        say: "LaunchIntent.OpenResponse",
+        flow: "yield",
+        to: "entry"
+      };
+    });
+
+    voxaApp.onIntent("LaunchIntent", spy);
+
+    const event = {
+      request: {
+        type: "LaunchRequest",
+        locale: "en-us"
+      },
+      session: {
+        new: true,
+        sessionId: "some",
+        application: {
+          applicationId: "appId"
+        },
+        user: {
+          userId: "user-id"
+        }
+      }
+    };
+
+    register(voxaApp, dashbotConfig);
+    const reply = await alexaSkill.execute(event as any);
+
+    expect(spy.called).to.be.true;
+    expect(reply.sessionAttributes.state).to.equal("entry");
+    expect(reply.speech).to.include("Hello! How are you?");
+    expect(nockScope.isDone()).to.be.true;
   });
 });
