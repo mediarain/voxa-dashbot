@@ -106,6 +106,10 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
   }
 
   async function initDashbot(voxaEvent: IVoxaEvent) {
+    if (!shouldTrack(voxaEvent)) {
+      return;
+    }
+
     const { platform } = voxaEvent;
     const apiKey = _.get(pluginConfig, platform.name) || pluginConfig.api_key;
 
@@ -118,10 +122,6 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
           | IDashbotPageLaunchEvent
           | IDashbotCustomEvent
       ) {
-        if (pluginConfig.suppressSending) {
-          return;
-        }
-
         const requestBody = {
           ...dashbotEvent,
           ...{
@@ -146,15 +146,10 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
   }
 
   async function trackIncoming(voxaEvent: IVoxaEvent) {
-    for (const ignoreRule of pluginConfig.ignoreUsers) {
-      if (voxaEvent.user.userId.match(ignoreRule)) {
-        return;
-      }
-    }
-
-    if (pluginConfig.suppressSending) {
+    if (!shouldTrack(voxaEvent)) {
       return;
     }
+
     const { rawEvent, platform } = voxaEvent;
     const apiKey = _.get(pluginConfig, platform.name) || pluginConfig.api_key;
 
@@ -166,12 +161,10 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
   }
 
   async function trackOutgoing(voxaEvent: IVoxaEvent, reply: IVoxaReply) {
-    if (_.includes(pluginConfig.ignoreUsers, voxaEvent.user.userId)) {
-      return Promise.resolve(null);
+    if (!shouldTrack(voxaEvent)) {
+      return;
     }
-    if (pluginConfig.suppressSending) {
-      return Promise.resolve(null);
-    }
+
     const { rawEvent, platform } = voxaEvent;
     const apiKey = _.get(pluginConfig, platform.name) || pluginConfig.api_key;
 
@@ -180,5 +173,19 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     ];
 
     await Dashbot.logOutgoing(rawEvent, reply);
+  }
+
+  function shouldTrack(voxaEvent: IVoxaEvent): boolean {
+    for (const ignoreRule of pluginConfig.ignoreUsers) {
+      if (voxaEvent.user.userId.match(ignoreRule)) {
+        return false;
+      }
+    }
+
+    if (pluginConfig.suppressSending) {
+      return false;
+    }
+
+    return true;
   }
 }
