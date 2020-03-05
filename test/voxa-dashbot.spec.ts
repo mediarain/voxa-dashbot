@@ -331,6 +331,7 @@ describe("Voxa-Dashbot plugin", () => {
     "Display.ElementSelected",
     "GameEngine.InputHandlerEvent",
     "Alexa.Presentation.APL.UserEvent",
+    "Alexa.Presentation.APLT.UserEvent",
     "Messaging.MessageReceived"
   ];
 
