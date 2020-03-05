@@ -94,6 +94,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     "CanFulfillIntentRequest",
     "GameEngine.InputHandlerEvent",
     "Alexa.Presentation.APL.UserEvent",
+    "Alexa.Presentation.APLT.UserEvent",
     "Messaging.MessageReceived"
   ];
 
