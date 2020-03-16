@@ -160,7 +160,11 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     await Dashbot.logIncoming(rawEvent);
   }
 
-  async function trackOutgoing(voxaEvent: IVoxaEvent, reply: IVoxaReply, transition?: ITransition) {
+  async function trackOutgoing(
+    voxaEvent: IVoxaEvent,
+    reply: IVoxaReply,
+    transition?: ITransition
+  ) {
     if (!shouldTrack(voxaEvent)) {
       return;
     }
