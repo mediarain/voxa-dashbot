@@ -22,7 +22,7 @@
 
 import DashbotAnalytics from "dashbot";
 import _ from "lodash";
-import { IVoxaEvent, IVoxaReply, VoxaApp } from "voxa";
+import { IVoxaEvent, IVoxaReply, VoxaApp, ITransition } from "voxa";
 import rp from "request-promise";
 import {
   IDashbotRevenueEvent,
@@ -165,19 +165,41 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     await Dashbot.logIncoming(rawEvent);
   }
 
-  async function trackOutgoing(voxaEvent: IVoxaEvent, reply: IVoxaReply) {
+  async function trackOutgoing(
+    voxaEvent: IVoxaEvent,
+    reply: IVoxaReply,
+    transition?: ITransition
+  ) {
     if (_.includes(pluginConfig.ignoreUsers, voxaEvent.user.userId)) {
       return Promise.resolve(null);
     }
     if (pluginConfig.suppressSending) {
       return Promise.resolve(null);
     }
+
     const { rawEvent, platform } = voxaEvent;
     const apiKey = _.get(pluginConfig, platform.name) || pluginConfig.api_key;
 
     const Dashbot = DashbotAnalytics(apiKey, dashbotConfig)[
       dashbotIntegrations[platform.name]
     ];
+
+    if (transition && transition.say) {
+      let says = transition.say;
+      if (!_.isArray(transition.say)) {
+        says = [transition.say];
+      }
+
+      const intent = says.join(",");
+      reply = {
+        ...reply,
+        ...{
+          intent: {
+            name: intent
+          }
+        }
+      };
+    }
 
     await Dashbot.logOutgoing(rawEvent, reply);
   }
