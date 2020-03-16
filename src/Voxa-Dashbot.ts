@@ -114,7 +114,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     const apiKey = _.get(pluginConfig, platform.name) || pluginConfig.api_key;
 
     voxaEvent.dashbot = {
-      trackEvent: async function (
+      trackEvent: async function(
         dashbotEvent:
           | IDashbotRevenueEvent
           | IDashbotReferralEvent
