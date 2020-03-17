@@ -197,7 +197,11 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     }
 
     voxaEvent.dashbot!.promises.push(Dashbot.logOutgoing(rawEvent, reply));
-    await Promise.all(voxaEvent.dashbot!.promises);
+    try {
+      await Promise.all(voxaEvent.dashbot!.promises);
+    } catch (e) {
+      voxaEvent.log.error(e);
+    }
   }
 
   function shouldTrack(voxaEvent: IVoxaEvent): boolean {
