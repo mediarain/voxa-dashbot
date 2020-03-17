@@ -22,7 +22,7 @@
 
 import DashbotAnalytics from "dashbot";
 import _ from "lodash";
-import { IVoxaEvent, IVoxaReply, VoxaApp } from "voxa";
+import { IVoxaEvent, IVoxaReply, VoxaApp, ITransition } from "voxa";
 import rp from "request-promise";
 import {
   IDashbotRevenueEvent,
@@ -107,6 +107,10 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
   }
 
   async function initDashbot(voxaEvent: IVoxaEvent) {
+    if (!shouldTrack(voxaEvent)) {
+      return;
+    }
+
     const { platform } = voxaEvent;
     const apiKey = _.get(pluginConfig, platform.name) || pluginConfig.api_key;
 
@@ -119,10 +123,6 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
           | IDashbotPageLaunchEvent
           | IDashbotCustomEvent
       ) {
-        if (pluginConfig.suppressSending) {
-          return;
-        }
-
         const requestBody = {
           ...dashbotEvent,
           ...{
@@ -147,15 +147,10 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
   }
 
   async function trackIncoming(voxaEvent: IVoxaEvent) {
-    for (const ignoreRule of pluginConfig.ignoreUsers) {
-      if (voxaEvent.user.userId.match(ignoreRule)) {
-        return;
-      }
-    }
-
-    if (pluginConfig.suppressSending) {
+    if (!shouldTrack(voxaEvent)) {
       return;
     }
+
     const { rawEvent, platform } = voxaEvent;
     const apiKey = _.get(pluginConfig, platform.name) || pluginConfig.api_key;
 
@@ -166,13 +161,15 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     await Dashbot.logIncoming(rawEvent);
   }
 
-  async function trackOutgoing(voxaEvent: IVoxaEvent, reply: IVoxaReply) {
-    if (_.includes(pluginConfig.ignoreUsers, voxaEvent.user.userId)) {
-      return Promise.resolve(null);
+  async function trackOutgoing(
+    voxaEvent: IVoxaEvent,
+    reply: IVoxaReply,
+    transition?: ITransition
+  ) {
+    if (!shouldTrack(voxaEvent)) {
+      return;
     }
-    if (pluginConfig.suppressSending) {
-      return Promise.resolve(null);
-    }
+
     const { rawEvent, platform } = voxaEvent;
     const apiKey = _.get(pluginConfig, platform.name) || pluginConfig.api_key;
 
@@ -180,6 +177,37 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
       dashbotIntegrations[platform.name]
     ];
 
+    if (transition && transition.say) {
+      let says = transition.say;
+      if (!_.isArray(transition.say)) {
+        says = [transition.say];
+      }
+
+      const intent = says.join(",");
+      reply = {
+        ...reply,
+        ...{
+          intent: {
+            name: intent
+          }
+        }
+      };
+    }
+
     await Dashbot.logOutgoing(rawEvent, reply);
+  }
+
+  function shouldTrack(voxaEvent: IVoxaEvent): boolean {
+    for (const ignoreRule of pluginConfig.ignoreUsers) {
+      if (voxaEvent.user.userId.match(ignoreRule)) {
+        return false;
+      }
+    }
+
+    if (pluginConfig.suppressSending) {
+      return false;
+    }
+
+    return true;
   }
 }

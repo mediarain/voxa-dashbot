@@ -13,6 +13,7 @@ const expect = chai.expect;
 const DASHBOT_URL = "https://tracker.dashbot.io";
 const dashbotConfig: any = {
   api_key: "some_api_key"
+  // debug: true
 };
 
 describe("Voxa-Dashbot plugin", () => {
@@ -34,6 +35,55 @@ describe("Voxa-Dashbot plugin", () => {
   afterEach(() => {
     simple.restore();
     nock.cleanAll();
+  });
+
+  it("should be setting the outgoing intent", async () => {
+    nock.cleanAll();
+    nockScope = nock(DASHBOT_URL)
+      // logIncoming
+      .post("/track")
+      .query(true)
+      .reply(200, "MOCK DATA")
+
+      // logOutgoing
+      .post("/track", body => {
+        return body.response.intent.name === "LaunchIntent.OpenResponse";
+      })
+      .query(true)
+      .reply(200, "MOCK DATA");
+
+    const spy = simple.spy(() => ({
+      say: "LaunchIntent.OpenResponse",
+      flow: "yield",
+      to: "entry"
+    }));
+
+    voxaApp.onIntent("LaunchIntent", spy);
+
+    const event = {
+      request: {
+        type: "LaunchRequest",
+        locale: "en-us"
+      },
+      session: {
+        new: true,
+        sessionId: "some",
+        application: {
+          applicationId: "appId"
+        },
+        user: {
+          userId: "user-id"
+        }
+      }
+    };
+
+    register(voxaApp, dashbotConfig);
+    const reply = await alexaSkill.execute(event as any);
+
+    expect(spy.called).to.be.true;
+    expect(reply.sessionAttributes.state).to.equal("entry");
+    expect(reply.speech).to.include("Hello! How are you?");
+    expect(nockScope.isDone()).to.be.true;
   });
 
   it("should register DashbotAnalytics on LaunchRequest", async () => {
@@ -170,17 +220,20 @@ describe("Voxa-Dashbot plugin", () => {
   });
 
   it("should not record analytics if the user is ignored", async () => {
-    const spy = simple.spy((_voxaEvent, reply) => {
-      return reply;
-    });
-    voxaApp.onSessionEnded(spy);
+    const spy = simple.spy(() => ({
+      say: "LaunchIntent.OpenResponse",
+      flow: "yield",
+      to: "entry"
+    }));
+
+    voxaApp.onIntent("LaunchIntent", spy);
 
     const event = {
       request: {
-        type: "SessionEndedRequest"
+        type: "LaunchRequest"
       },
       session: {
-        new: false,
+        new: true,
         application: {
           applicationId: "appId"
         },
@@ -194,23 +247,26 @@ describe("Voxa-Dashbot plugin", () => {
     ignoreUsersConfig.ignoreUsers = ["user-id"];
 
     register(voxaApp, ignoreUsersConfig);
-    return alexaSkill.execute(event as any).then(reply => {
-      expect(reply.version).to.equal("1.0");
-    });
+    const reply = await alexaSkill.execute(event as any);
+    expect(reply.version).to.equal("1.0");
+    expect(nockScope.isDone()).to.be.false;
   });
 
   it("should support regexex for ignored user ids", async () => {
-    const spy = simple.spy((_voxaEvent, reply) => {
-      return reply;
-    });
-    voxaApp.onSessionEnded(spy);
+    const spy = simple.spy(() => ({
+      say: "LaunchIntent.OpenResponse",
+      flow: "yield",
+      to: "entry"
+    }));
+
+    voxaApp.onIntent("LaunchIntent", spy);
 
     const event = {
       request: {
-        type: "SessionEndedRequest"
+        type: "LaunchRequest"
       },
       session: {
-        new: false,
+        new: true,
         application: {
           applicationId: "appId"
         },
@@ -230,15 +286,20 @@ describe("Voxa-Dashbot plugin", () => {
   });
 
   it("should not record analytics if suppressSending === true", async () => {
-    const spy = simple.spy((_voxaEvent, reply) => reply);
-    voxaApp.onSessionEnded(spy);
+    const spy = simple.spy(() => ({
+      say: "LaunchIntent.OpenResponse",
+      flow: "yield",
+      to: "entry"
+    }));
+
+    voxaApp.onIntent("LaunchIntent", spy);
 
     const event = {
       request: {
-        type: "SessionEndedRequest"
+        type: "LaunchRequest"
       },
       session: {
-        new: false,
+        new: true,
         application: {
           applicationId: "appId"
         },
@@ -252,9 +313,8 @@ describe("Voxa-Dashbot plugin", () => {
     suppressSendingConfig.suppressSending = true;
 
     register(voxaApp, suppressSendingConfig);
-    return alexaSkill.execute(event as any).then(reply => {
-      expect(reply.version).to.equal("1.0");
-    });
+    const reply = await alexaSkill.execute(event as any);
+    expect(reply.version).to.equal("1.0");
   });
 
   it("should not record analytics due to Dashbot Error", async () => {
@@ -277,34 +337,8 @@ describe("Voxa-Dashbot plugin", () => {
     };
 
     register(voxaApp, dashbotConfig);
-    return alexaSkill.execute(event as any).then(reply => {
-      expect(reply.version).to.equal("1.0");
-    });
-  });
-
-  it("should not record analytics due to Dashbot Error", async () => {
-    const spy = simple.spy((_voxaEvent, reply) => reply);
-    voxaApp.onSessionEnded(spy);
-
-    const event = {
-      request: {
-        type: "SessionEndedRequest"
-      },
-      session: {
-        new: false,
-        application: {
-          applicationId: "appId"
-        },
-        user: {
-          userId: "user-id"
-        }
-      }
-    };
-
-    register(voxaApp, dashbotConfig);
-    return alexaSkill.execute(event as any).then(reply => {
-      expect(reply.version).to.equal("1.0");
-    });
+    const reply = await alexaSkill.execute(event as any);
+    expect(reply.version).to.equal("1.0");
   });
 
   const alexaRequestTypes = [
@@ -335,37 +369,39 @@ describe("Voxa-Dashbot plugin", () => {
     "Messaging.MessageReceived"
   ];
 
-  for (const requestType of alexaRequestTypes) {
-    it(`should record alexa ${requestType}`, async () => {
-      const spy = simple.spy((_request, reply) => reply || {});
+  describe("Custom Alexa Intents", () => {
+    for (const requestType of alexaRequestTypes) {
+      it(`should record alexa ${requestType}`, async () => {
+        const spy = simple.spy((_request, reply) => reply || {});
 
-      voxaApp[`on${requestType}`](spy);
-      voxaApp.onIntent(requestType, spy);
+        voxaApp[`on${requestType}`](spy);
+        voxaApp.onIntent(requestType, spy);
 
-      const event = {
-        request: {
-          type: requestType,
-          locale: "en-us"
-        },
-        session: {
-          new: true,
-          sessionId: "some",
-          application: {
-            applicationId: "appId"
+        const event = {
+          request: {
+            type: requestType,
+            locale: "en-us"
           },
-          user: {
-            userId: "user-id"
+          session: {
+            new: true,
+            sessionId: "some",
+            application: {
+              applicationId: "appId"
+            },
+            user: {
+              userId: "user-id"
+            }
           }
-        }
-      };
+        };
 
-      register(voxaApp, dashbotConfig);
-      await alexaSkill.execute(event as any);
+        register(voxaApp, dashbotConfig);
+        await alexaSkill.execute(event as any);
 
-      expect(spy.called).to.be.true;
-      expect(nockScope.isDone()).to.be.true;
-    });
-  }
+        expect(spy.called).to.be.true;
+        expect(nockScope.isDone()).to.be.true;
+      });
+    }
+  });
 
   it("should support sending a custom event", async () => {
     nock.cleanAll();
