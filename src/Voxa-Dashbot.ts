@@ -132,17 +132,19 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
         };
 
         voxaEvent.dashbot!.promises.push(
-          rp.post({
-            uri: "https://tracker.dashbot.io/track",
-            qs: {
-              platform: dashbotIntegrations[platform.name],
-              v: "11.1.0-rest",
-              type: "event",
-              apiKey: apiKey
-            },
-            json: true,
-            body: requestBody
-          })
+          rp
+            .post({
+              uri: "https://tracker.dashbot.io/track",
+              qs: {
+                platform: dashbotIntegrations[platform.name],
+                v: "11.1.0-rest",
+                type: "event",
+                apiKey: apiKey
+              },
+              json: true,
+              body: requestBody
+            })
+            .catch(voxaEvent.log.error)
         );
       }
     };
@@ -160,7 +162,9 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
       dashbotIntegrations[platform.name]
     ];
 
-    voxaEvent.dashbot!.promises.push(Dashbot.logIncoming(rawEvent));
+    voxaEvent.dashbot!.promises.push(
+      Dashbot.logIncoming(rawEvent).catch(voxaEvent.log.error)
+    );
   }
 
   async function trackOutgoing(
@@ -196,7 +200,9 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
       };
     }
 
-    voxaEvent.dashbot!.promises.push(Dashbot.logOutgoing(rawEvent, reply));
+    voxaEvent.dashbot!.promises.push(
+      Dashbot.logOutgoing(rawEvent, reply).catch(voxaEvent.log.error)
+    );
     try {
       await Promise.all(voxaEvent.dashbot!.promises);
     } catch (e) {
