@@ -105,7 +105,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     }
   }
 
-  async function initDashbot(voxaEvent: IVoxaEvent) {
+  function initDashbot(voxaEvent: IVoxaEvent) {
     if (!shouldTrack(voxaEvent)) {
       return;
     }
@@ -114,6 +114,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     const apiKey = _.get(pluginConfig, platform.name) || pluginConfig.api_key;
 
     voxaEvent.dashbot = {
+      promises: [],
       trackEvent: async function(
         dashbotEvent:
           | IDashbotRevenueEvent
@@ -130,22 +131,24 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
           }
         };
 
-        await rp.post({
-          uri: "https://tracker.dashbot.io/track",
-          qs: {
-            platform: dashbotIntegrations[platform.name],
-            v: "11.1.0-rest",
-            type: "event",
-            apiKey: apiKey
-          },
-          json: true,
-          body: requestBody
-        });
+        voxaEvent.dashbot!.promises.push(
+          rp.post({
+            uri: "https://tracker.dashbot.io/track",
+            qs: {
+              platform: dashbotIntegrations[platform.name],
+              v: "11.1.0-rest",
+              type: "event",
+              apiKey: apiKey
+            },
+            json: true,
+            body: requestBody
+          })
+        );
       }
     };
   }
 
-  async function trackIncoming(voxaEvent: IVoxaEvent) {
+  function trackIncoming(voxaEvent: IVoxaEvent) {
     if (!shouldTrack(voxaEvent)) {
       return;
     }
@@ -157,7 +160,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
       dashbotIntegrations[platform.name]
     ];
 
-    await Dashbot.logIncoming(rawEvent);
+    voxaEvent.dashbot!.promises.push(Dashbot.logIncoming(rawEvent));
   }
 
   async function trackOutgoing(
@@ -193,7 +196,8 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
       };
     }
 
-    await Dashbot.logOutgoing(rawEvent, reply);
+    voxaEvent.dashbot!.promises.push(Dashbot.logOutgoing(rawEvent, reply));
+    await Promise.all(voxaEvent.dashbot!.promises);
   }
 
   function shouldTrack(voxaEvent: IVoxaEvent): boolean {
