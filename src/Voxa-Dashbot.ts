@@ -22,7 +22,7 @@
 
 import DashbotAnalytics from "dashbot";
 import _ from "lodash";
-import { IVoxaEvent, IVoxaReply, VoxaApp, ITransition } from "voxa";
+import { VoxaEvent, IVoxaEvent, IVoxaReply, VoxaApp, ITransition } from "voxa";
 import rp from "request-promise";
 import {
   IDashbotRevenueEvent,
@@ -31,6 +31,35 @@ import {
   IDashbotPageLaunchEvent,
   IDashbotCustomEvent
 } from "./events";
+
+interface IOutgoingIntent {
+  name?: string;
+  input: IOutgoingInput[];
+}
+
+interface IOutgoingInput {
+  name: string;
+  value: string;
+}
+
+class dashbotRider {
+  private outgoingIntent: any;
+
+  constructor(voxaEvent: VoxaEvent) {
+    this.outgoingIntent = {};
+  }
+
+  public addInputs(outgoingInputs: IOutgoingIntent) {
+    const name = _.get(outgoingInputs, "name");
+    const input = _.get(outgoingInputs, "input");
+    if (name) {
+      this.outgoingIntent.name = name;
+    }
+    if (input) {
+      this.outgoingIntent.input = input;
+    }
+  }
+}
 
 const defaultConfig = {
   ignoreUsers: []
@@ -67,6 +96,9 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
 
   voxaApp.onRequestStarted(initDashbot);
   voxaApp.onRequestStarted(trackIncoming);
+  voxaApp.onRequestStarted(async voxaEvent => {
+    voxaEvent.dashbotRider = new dashbotRider(voxaEvent);
+  });
   voxaApp.onBeforeReplySent(trackOutgoing);
 
   const alexaRequestTypes = [

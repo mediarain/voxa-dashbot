@@ -456,7 +456,6 @@ describe("Voxa-Dashbot plugin", () => {
 
     register(voxaApp, dashbotConfig);
     const reply = await alexaSkill.execute(event as any);
-
     expect(spy.called).to.be.true;
     expect(reply.sessionAttributes.state).to.equal("entry");
     expect(reply.speech).to.include("Hello! How are you?");
