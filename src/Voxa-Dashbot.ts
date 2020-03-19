@@ -43,21 +43,20 @@ interface IOutgoingInput {
 }
 
 class dashbotRider {
-  private outgoingIntent: any;
-
-  constructor(voxaEvent: VoxaEvent) {
-    this.outgoingIntent = {};
-  }
+  public outgoingIntent: any = {};
 
   public addInputs(outgoingInputs: IOutgoingIntent) {
-    const name = _.get(outgoingInputs, "name");
     const input = _.get(outgoingInputs, "input");
-    if (name) {
-      this.outgoingIntent.name = name;
-    }
+
+    this.outgoingIntent.input = outgoingInputs;
+
     if (input) {
       this.outgoingIntent.input = input;
     }
+  }
+
+  get inputs() {
+    return this.outgoingIntent.input;
   }
 }
 
@@ -97,9 +96,16 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
   voxaApp.onRequestStarted(initDashbot);
   voxaApp.onRequestStarted(trackIncoming);
   voxaApp.onRequestStarted(async voxaEvent => {
-    voxaEvent.dashbotRider = new dashbotRider(voxaEvent);
+    voxaEvent.dashbotRider = new dashbotRider();
   });
-  voxaApp.onBeforeReplySent(trackOutgoing);
+  voxaApp.onBeforeReplySent(async (voxaEvent, reply, transition) => {
+    let input;
+    if (voxaEvent.dashbotRider) {
+      input = voxaEvent.dashbotRider.inputs;
+    }
+
+    trackOutgoing(voxaEvent, reply, transition, input);
+  });
 
   const alexaRequestTypes = [
     "AudioPlayer.PlaybackStarted",
@@ -196,7 +202,8 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
   async function trackOutgoing(
     voxaEvent: IVoxaEvent,
     reply: IVoxaReply,
-    transition?: ITransition
+    transition?: ITransition,
+    input?: any
   ) {
     if (!shouldTrack(voxaEvent)) {
       return;
@@ -215,12 +222,17 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
         says = [transition.say];
       }
 
+      if (_.isPlainObject(input)) {
+        input = [input];
+      }
+
       const intent = says.join(",");
       reply = {
         ...reply,
         ...{
           intent: {
-            name: intent
+            name: intent,
+            input
           }
         }
       };
