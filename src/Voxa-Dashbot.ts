@@ -55,7 +55,7 @@ class dashbotRider {
     }
   }
 
-  get inputs() {
+  get input() {
     return this.outgoingIntent.input;
   }
 }
@@ -101,7 +101,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
   voxaApp.onBeforeReplySent(async (voxaEvent, reply, transition) => {
     let input;
     if (voxaEvent.dashbotRider) {
-      input = voxaEvent.dashbotRider.inputs;
+      input = voxaEvent.dashbotRider.input;
     }
 
     trackOutgoing(voxaEvent, reply, transition, input);
