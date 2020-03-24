@@ -158,6 +158,70 @@ describe("Voxa-Dashbot plugin", () => {
     expect(nockScope.isDone()).to.be.true;
   });
 
+  it("should be setting the outgoing intent with simple input", async () => {
+    const customProps = {
+      name: "demo name",
+      value: "another value"
+    };
+
+    nock.cleanAll();
+    nockScope = nock(DASHBOT_URL)
+      // logIncoming
+      .post("/track")
+      .query(true)
+      .reply(200, "MOCK DATA")
+
+      // logOutgoing
+      .post("/track", body => {
+        return (
+          JSON.stringify(body.response.intent.input) ===
+          JSON.stringify([customProps])
+        );
+      })
+      .query(true)
+      .reply(200, "MOCK DATA")
+      .log(console.log);
+
+    const spy = simple.spy((voxaEvent: VoxaEvent) => {
+      const event = voxaEvent as any;
+      event.dashbotRider.addInputs(customProps);
+      return { say: "LaunchIntent.OpenResponse", flow: "yield", to: "entry" };
+    });
+
+    voxaApp.onIntent("LaunchIntent", spy);
+
+    const event = {
+      request: {
+        type: "LaunchRequest",
+        locale: "en-us"
+      },
+      session: {
+        new: true,
+        sessionId: "some",
+        application: {
+          applicationId: "appId"
+        },
+        user: {
+          userId: "user-id"
+        }
+      }
+    };
+
+    try {
+      nockScope.done();
+    } catch (e) {
+      console.log("error -> " + e); // pass exception object to error handler
+    }
+
+    register(voxaApp, dashbotConfig);
+    const reply = await alexaSkill.execute(event as any);
+
+    expect(spy.called).to.be.true;
+    expect(reply.sessionAttributes.state).to.equal("entry");
+    expect(reply.speech).to.include("Hello! How are you?");
+    expect(nockScope.isDone()).to.be.true;
+  });
+
   it("should register DashbotAnalytics on LaunchRequest", async () => {
     const spy = simple.spy(() => ({
       say: "LaunchIntent.OpenResponse",
