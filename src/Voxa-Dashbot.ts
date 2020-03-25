@@ -42,24 +42,6 @@ interface IOutgoingInput {
   value: string;
 }
 
-class dashbotRider {
-  public outgoingIntent: any = {};
-
-  public addInputs(outgoingInputs: IOutgoingIntent) {
-    const input = _.get(outgoingInputs, "input");
-
-    this.outgoingIntent.input = outgoingInputs;
-
-    if (input) {
-      this.outgoingIntent.input = input;
-    }
-  }
-
-  get input() {
-    return this.outgoingIntent.input;
-  }
-}
-
 const defaultConfig = {
   ignoreUsers: []
 };
@@ -95,13 +77,11 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
 
   voxaApp.onRequestStarted(initDashbot);
   voxaApp.onRequestStarted(trackIncoming);
-  voxaApp.onRequestStarted(async voxaEvent => {
-    voxaEvent.dashbotRider = new dashbotRider();
-  });
   voxaApp.onBeforeReplySent(async (voxaEvent, reply, transition) => {
     let input;
-    if (voxaEvent.dashbotRider) {
-      input = voxaEvent.dashbotRider.input;
+
+    if (voxaEvent.dashbot) {
+      input = voxaEvent.dashbot.input;
     }
 
     trackOutgoing(voxaEvent, reply, transition, input);
@@ -152,6 +132,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     const { platform } = voxaEvent;
     const apiKey = _.get(pluginConfig, platform.name) || pluginConfig.api_key;
 
+    let outgoingIntent: any = {};
     voxaEvent.dashbot = {
       trackEvent: async function(
         dashbotEvent:
@@ -180,6 +161,24 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
           json: true,
           body: requestBody
         });
+      },
+
+      addInputs: function(outgoingInputs) {
+        const input = _.get(outgoingInputs, "input");
+
+        outgoingIntent.input = outgoingInputs;
+
+        if (input) {
+          outgoingIntent.input = input;
+        }
+      },
+
+      get input() {
+        return outgoingIntent.input;
+      },
+
+      set input(value: any) {
+        outgoingIntent.input = value;
       }
     };
   }

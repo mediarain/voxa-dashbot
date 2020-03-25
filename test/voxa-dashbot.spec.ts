@@ -118,9 +118,8 @@ describe("Voxa-Dashbot plugin", () => {
       .reply(200, "MOCK DATA")
       .log(console.log);
 
-    const spy = simple.spy((voxaEvent: VoxaEvent) => {
-      const event = voxaEvent as any;
-      event.dashbotRider.addInputs(customProps);
+    const spy = simple.spy(request => {
+      request.dashbot.addInputs(customProps);
       return { say: "LaunchIntent.OpenResponse", flow: "yield", to: "entry" };
     });
 
@@ -182,9 +181,8 @@ describe("Voxa-Dashbot plugin", () => {
       .reply(200, "MOCK DATA")
       .log(console.log);
 
-    const spy = simple.spy((voxaEvent: VoxaEvent) => {
-      const event = voxaEvent as any;
-      event.dashbotRider.addInputs(customProps);
+    const spy = simple.spy(request => {
+      request.dashbot.addInputs(customProps);
       return { say: "LaunchIntent.OpenResponse", flow: "yield", to: "entry" };
     });
 
