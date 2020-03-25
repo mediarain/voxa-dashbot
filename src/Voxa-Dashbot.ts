@@ -175,10 +175,6 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
 
       get input() {
         return outgoingIntent.input;
-      },
-
-      set input(value: any) {
-        outgoingIntent.input = value;
       }
     };
   }
