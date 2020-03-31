@@ -84,7 +84,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
       input = voxaEvent.dashbot.input;
     }
 
-    trackOutgoing(voxaEvent, reply, transition, input);
+    await trackOutgoing(voxaEvent, reply, transition, input);
   });
 
   const alexaRequestTypes = [
