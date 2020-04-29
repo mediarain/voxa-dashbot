@@ -29,18 +29,18 @@ import {
   IDashbotReferralEvent,
   IDashbotShareEvent,
   IDashbotPageLaunchEvent,
-  IDashbotCustomEvent
+  IDashbotCustomEvent,
 } from "./events";
 
 const defaultConfig = {
-  ignoreUsers: []
+  ignoreUsers: [],
 };
 
 const dashbotIntegrations: any = {
   alexa: "alexa",
   botframework: "generic",
   dialogflow: "google", // DEPRECATED
-  google: "google"
+  google: "google",
 };
 
 export interface IVoxaDashbotConfig {
@@ -62,7 +62,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     debug: pluginConfig.debug,
     printErrors: pluginConfig.printErrors,
     redact: pluginConfig.redact,
-    timeout: pluginConfig.timeout
+    timeout: pluginConfig.timeout,
   };
 
   voxaApp.onRequestStarted(initDashbot);
@@ -94,7 +94,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     "CanFulfillIntentRequest",
     "GameEngine.InputHandlerEvent",
     "Alexa.Presentation.APL.UserEvent",
-    "Messaging.MessageReceived"
+    "Messaging.MessageReceived",
   ];
 
   for (const requestType of alexaRequestTypes) {
@@ -114,7 +114,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     const apiKey = _.get(pluginConfig, platform.name) || pluginConfig.api_key;
 
     voxaEvent.dashbot = {
-      trackEvent: async function(
+      trackEvent: async function (
         dashbotEvent:
           | IDashbotRevenueEvent
           | IDashbotReferralEvent
@@ -126,8 +126,8 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
           ...dashbotEvent,
           ...{
             userId: voxaEvent.user.userId,
-            conversationId: voxaEvent.session.sessionId
-          }
+            conversationId: voxaEvent.session.sessionId,
+          },
         };
 
         await rp.post({
@@ -136,12 +136,12 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
             platform: dashbotIntegrations[platform.name],
             v: "11.1.0-rest",
             type: "event",
-            apiKey: apiKey
+            apiKey: apiKey,
           },
           json: true,
-          body: requestBody
+          body: requestBody,
         });
-      }
+      },
     };
   }
 
@@ -187,9 +187,9 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
         ...reply,
         ...{
           intent: {
-            name: intent
-          }
-        }
+            name: intent,
+          },
+        },
       };
     }
 
