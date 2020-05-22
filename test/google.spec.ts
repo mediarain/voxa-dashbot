@@ -34,16 +34,11 @@ describe("Voxa-Dashbot plugin", () => {
   });
 
   it("should set the userStorage.dashbotUser.userId", async () => {
-    console.log("=========================================================");
     nockScope = nock(DASHBOT_URL)
       .post("/track")
       .query(true)
       .reply(200, "MOCK DATA")
       .post("/track", (body) => {
-        console.log(JSON.stringify(body.message, null, 2));
-        console.log(
-          "========================================================="
-        );
         const storageJSON = _.get(body, "message.payload.google.userStorage");
         if (!storageJSON) {
           return false;
@@ -62,7 +57,6 @@ describe("Voxa-Dashbot plugin", () => {
     }));
     voxaApp.onState("input.welcome", spy);
     const reply = await googleAction.execute(launch);
-    console.log(JSON.stringify(reply, null, 2));
 
     expect(spy.called).to.be.true;
     expect(nockScope.isDone()).to.be.true;
