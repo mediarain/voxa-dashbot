@@ -45,7 +45,7 @@ describe("Voxa-Dashbot plugin", () => {
         }
 
         const storage = JSON.parse(storageJSON);
-        return (storage.data.voxa.userId = storage.data.dashbotUser.userId);
+        return (storage.data.voxa.userId = storage.dashbotUser.userId);
       })
       .query(true)
       .reply(200, "MOCK DATA");

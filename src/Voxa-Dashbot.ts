@@ -200,14 +200,15 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     }
 
     if (isGoogleAssistant(voxaEvent)) {
-      voxaEvent.dialogflow.conv.user.storage.dashbotUser = {
-        userId: voxaEvent.user.userId,
-      };
-
       reply = _.merge({}, reply, {
         payload: {
           google: {
-            userStorage: voxaEvent.dialogflow.conv.user._serialize(),
+            userStorage: JSON.stringify({
+              ...JSON.parse(voxaEvent.dialogflow.conv.user._serialize()),
+              dashbotUser: {
+                userId: voxaEvent.user.userId,
+              },
+            }),
           },
         },
       });
