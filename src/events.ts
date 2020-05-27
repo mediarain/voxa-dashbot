@@ -34,6 +34,7 @@ export interface IDashbotReferralEvent extends IDashbotEvent {
 }
 
 export interface IDashbot {
+  promises: any[];
   trackEvent: (
     event:
       | IDashbotCustomEvent
