@@ -29,18 +29,18 @@ import {
   IDashbotReferralEvent,
   IDashbotShareEvent,
   IDashbotPageLaunchEvent,
-  IDashbotCustomEvent
+  IDashbotCustomEvent,
 } from "./events";
 
 const defaultConfig = {
-  ignoreUsers: []
+  ignoreUsers: [],
 };
 
 const dashbotIntegrations: any = {
   alexa: "alexa",
   botframework: "generic",
   dialogflow: "google", // DEPRECATED
-  google: "google"
+  google: "google",
 };
 
 export interface IVoxaDashbotConfig {
@@ -62,7 +62,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     debug: pluginConfig.debug,
     printErrors: pluginConfig.printErrors,
     redact: pluginConfig.redact,
-    timeout: pluginConfig.timeout
+    timeout: pluginConfig.timeout,
   };
 
   voxaApp.onRequestStarted(initDashbot);
@@ -94,7 +94,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     "CanFulfillIntentRequest",
     "GameEngine.InputHandlerEvent",
     "Alexa.Presentation.APL.UserEvent",
-    "Messaging.MessageReceived"
+    "Messaging.MessageReceived",
   ];
 
   for (const requestType of alexaRequestTypes) {
@@ -115,7 +115,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
 
     voxaEvent.dashbot = {
       promises: [],
-      trackEvent: async function(
+      trackEvent: async function (
         dashbotEvent:
           | IDashbotRevenueEvent
           | IDashbotReferralEvent
@@ -127,26 +127,24 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
           ...dashbotEvent,
           ...{
             userId: voxaEvent.user.userId,
-            conversationId: voxaEvent.session.sessionId
-          }
+            conversationId: voxaEvent.session.sessionId,
+          },
         };
 
         voxaEvent.dashbot!.promises.push(
-          rp
-            .post({
-              uri: "https://tracker.dashbot.io/track",
-              qs: {
-                platform: dashbotIntegrations[platform.name],
-                v: "11.1.0-rest",
-                type: "event",
-                apiKey: apiKey
-              },
-              json: true,
-              body: requestBody
-            })
-            .catch(voxaEvent.log.error)
+          rp.post({
+            uri: "https://tracker.dashbot.io/track",
+            qs: {
+              platform: dashbotIntegrations[platform.name],
+              v: "11.1.0-rest",
+              type: "event",
+              apiKey: apiKey,
+            },
+            json: true,
+            body: requestBody,
+          })
         );
-      }
+      },
     };
   }
 
@@ -162,9 +160,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
       dashbotIntegrations[platform.name]
     ];
 
-    voxaEvent.dashbot!.promises.push(
-      Dashbot.logIncoming(rawEvent).catch(voxaEvent.log.error)
-    );
+    voxaEvent.dashbot!.promises.push(Dashbot.logIncoming(rawEvent));
   }
 
   async function trackOutgoing(
@@ -194,20 +190,14 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
         ...reply,
         ...{
           intent: {
-            name: intent
-          }
-        }
+            name: intent,
+          },
+        },
       };
     }
 
-    voxaEvent.dashbot!.promises.push(
-      Dashbot.logOutgoing(rawEvent, reply).catch(voxaEvent.log.error)
-    );
-    try {
-      await Promise.all(voxaEvent.dashbot!.promises);
-    } catch (e) {
-      voxaEvent.log.error(e);
-    }
+    voxaEvent.dashbot!.promises.push(Dashbot.logOutgoing(rawEvent, reply));
+    return Promise.all(voxaEvent.dashbot!.promises);
   }
 
   function shouldTrack(voxaEvent: IVoxaEvent): boolean {

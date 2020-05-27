@@ -12,8 +12,9 @@ import * as views from "./views";
 const expect = chai.expect;
 const DASHBOT_URL = "https://tracker.dashbot.io";
 const dashbotConfig: any = {
-  api_key: "some_api_key"
-  // debug: true
+  api_key: "some_api_key",
+  // debug: true,
+  printErrors: false,
 };
 
 describe("Voxa-Dashbot plugin", () => {
@@ -46,7 +47,7 @@ describe("Voxa-Dashbot plugin", () => {
       .reply(200, "MOCK DATA")
 
       // logOutgoing
-      .post("/track", body => {
+      .post("/track", (body) => {
         return body.response.intent.name === "LaunchIntent.OpenResponse";
       })
       .query(true)
@@ -55,7 +56,7 @@ describe("Voxa-Dashbot plugin", () => {
     const spy = simple.spy(() => ({
       say: "LaunchIntent.OpenResponse",
       flow: "yield",
-      to: "entry"
+      to: "entry",
     }));
 
     voxaApp.onIntent("LaunchIntent", spy);
@@ -63,18 +64,18 @@ describe("Voxa-Dashbot plugin", () => {
     const event = {
       request: {
         type: "LaunchRequest",
-        locale: "en-us"
+        locale: "en-us",
       },
       session: {
         new: true,
         sessionId: "some",
         application: {
-          applicationId: "appId"
+          applicationId: "appId",
         },
         user: {
-          userId: "user-id"
-        }
-      }
+          userId: "user-id",
+        },
+      },
     };
 
     register(voxaApp, dashbotConfig);
@@ -90,7 +91,7 @@ describe("Voxa-Dashbot plugin", () => {
     const spy = simple.spy(() => ({
       say: "LaunchIntent.OpenResponse",
       flow: "yield",
-      to: "entry"
+      to: "entry",
     }));
 
     voxaApp.onIntent("LaunchIntent", spy);
@@ -98,18 +99,18 @@ describe("Voxa-Dashbot plugin", () => {
     const event = {
       request: {
         type: "LaunchRequest",
-        locale: "en-us"
+        locale: "en-us",
       },
       session: {
         new: true,
         sessionId: "some",
         application: {
-          applicationId: "appId"
+          applicationId: "appId",
         },
         user: {
-          userId: "user-id"
-        }
-      }
+          userId: "user-id",
+        },
+      },
     };
 
     register(voxaApp, dashbotConfig);
@@ -125,7 +126,7 @@ describe("Voxa-Dashbot plugin", () => {
     const spy = simple.spy(() => ({
       flow: "yield",
       say: "Question.Ask",
-      to: "entry"
+      to: "entry",
     }));
     voxaApp.onIntent("SomeIntent", spy);
 
@@ -133,18 +134,18 @@ describe("Voxa-Dashbot plugin", () => {
       request: {
         type: "IntentRequest",
         intent: {
-          name: "SomeIntent"
-        }
+          name: "SomeIntent",
+        },
       },
       session: {
         new: false,
         application: {
-          applicationId: "appId"
+          applicationId: "appId",
         },
         user: {
-          userId: "user-id"
-        }
-      }
+          userId: "user-id",
+        },
+      },
     };
 
     register(voxaApp, dashbotConfig);
@@ -164,17 +165,17 @@ describe("Voxa-Dashbot plugin", () => {
 
     const event = {
       request: {
-        type: "SessionEndedRequest"
+        type: "SessionEndedRequest",
       },
       session: {
         new: false,
         application: {
-          applicationId: "appId"
+          applicationId: "appId",
         },
         user: {
-          userId: "user-id"
-        }
-      }
+          userId: "user-id",
+        },
+      },
     };
 
     register(voxaApp, dashbotConfig);
@@ -199,18 +200,18 @@ describe("Voxa-Dashbot plugin", () => {
       request: {
         type: "IntentRequest",
         intent: {
-          name: "ErrorIntent"
-        }
+          name: "ErrorIntent",
+        },
       },
       session: {
         new: false,
         application: {
-          applicationId: "appId"
+          applicationId: "appId",
         },
         user: {
-          userId: "user-id"
-        }
-      }
+          userId: "user-id",
+        },
+      },
     };
 
     register(voxaApp, dashbotConfig);
@@ -223,24 +224,24 @@ describe("Voxa-Dashbot plugin", () => {
     const spy = simple.spy(() => ({
       say: "LaunchIntent.OpenResponse",
       flow: "yield",
-      to: "entry"
+      to: "entry",
     }));
 
     voxaApp.onIntent("LaunchIntent", spy);
 
     const event = {
       request: {
-        type: "LaunchRequest"
+        type: "LaunchRequest",
       },
       session: {
         new: true,
         application: {
-          applicationId: "appId"
+          applicationId: "appId",
         },
         user: {
-          userId: "user-id"
-        }
-      }
+          userId: "user-id",
+        },
+      },
     };
 
     const ignoreUsersConfig = _.cloneDeep(dashbotConfig);
@@ -256,24 +257,24 @@ describe("Voxa-Dashbot plugin", () => {
     const spy = simple.spy(() => ({
       say: "LaunchIntent.OpenResponse",
       flow: "yield",
-      to: "entry"
+      to: "entry",
     }));
 
     voxaApp.onIntent("LaunchIntent", spy);
 
     const event = {
       request: {
-        type: "LaunchRequest"
+        type: "LaunchRequest",
       },
       session: {
         new: true,
         application: {
-          applicationId: "appId"
+          applicationId: "appId",
         },
         user: {
-          userId: "user-id-with-something-random-appended"
-        }
-      }
+          userId: "user-id-with-something-random-appended",
+        },
+      },
     };
 
     const ignoreUsersConfig = _.cloneDeep(dashbotConfig);
@@ -289,24 +290,24 @@ describe("Voxa-Dashbot plugin", () => {
     const spy = simple.spy(() => ({
       say: "LaunchIntent.OpenResponse",
       flow: "yield",
-      to: "entry"
+      to: "entry",
     }));
 
     voxaApp.onIntent("LaunchIntent", spy);
 
     const event = {
       request: {
-        type: "LaunchRequest"
+        type: "LaunchRequest",
       },
       session: {
         new: true,
         application: {
-          applicationId: "appId"
+          applicationId: "appId",
         },
         user: {
-          userId: "user-id"
-        }
-      }
+          userId: "user-id",
+        },
+      },
     };
 
     const suppressSendingConfig = _.cloneDeep(dashbotConfig);
@@ -323,17 +324,17 @@ describe("Voxa-Dashbot plugin", () => {
 
     const event = {
       request: {
-        type: "SessionEndedRequest"
+        type: "SessionEndedRequest",
       },
       session: {
         new: false,
         application: {
-          applicationId: "appId"
+          applicationId: "appId",
         },
         user: {
-          userId: "user-id"
-        }
-      }
+          userId: "user-id",
+        },
+      },
     };
 
     register(voxaApp, dashbotConfig);
@@ -365,7 +366,7 @@ describe("Voxa-Dashbot plugin", () => {
     "Display.ElementSelected",
     "GameEngine.InputHandlerEvent",
     "Alexa.Presentation.APL.UserEvent",
-    "Messaging.MessageReceived"
+    "Messaging.MessageReceived",
   ];
 
   describe("Custom Alexa Intents", () => {
@@ -379,18 +380,18 @@ describe("Voxa-Dashbot plugin", () => {
         const event = {
           request: {
             type: requestType,
-            locale: "en-us"
+            locale: "en-us",
           },
           session: {
             new: true,
             sessionId: "some",
             application: {
-              applicationId: "appId"
+              applicationId: "appId",
             },
             user: {
-              userId: "user-id"
-            }
-          }
+              userId: "user-id",
+            },
+          },
         };
 
         register(voxaApp, dashbotConfig);
@@ -400,6 +401,48 @@ describe("Voxa-Dashbot plugin", () => {
         expect(nockScope.isDone()).to.be.true;
       });
     }
+  });
+
+  it("should not crash the skill on an unexpected reply from dashbot", async () => {
+    nock.cleanAll();
+    nockScope = nock(DASHBOT_URL)
+      .post("/track")
+      .query(true)
+      .replyWithError("Some API ERROR")
+      .persist();
+
+    const spy = simple.spy(() => ({
+      say: "LaunchIntent.OpenResponse",
+      flow: "yield",
+      to: "entry",
+    }));
+
+    voxaApp.onIntent("LaunchIntent", spy);
+
+    const event = {
+      request: {
+        type: "LaunchRequest",
+        locale: "en-us",
+      },
+      session: {
+        new: true,
+        sessionId: "some",
+        application: {
+          applicationId: "appId",
+        },
+        user: {
+          userId: "user-id",
+        },
+      },
+    };
+
+    register(voxaApp, dashbotConfig);
+    const reply = await alexaSkill.execute(event as any);
+
+    expect(spy.called).to.be.true;
+    expect(reply.sessionAttributes.state).to.equal("entry");
+    expect(reply.speech).to.include("Hello! How are you?");
+    expect(nockScope.isDone()).to.be.true;
   });
 
   it("should support sending a custom event", async () => {
@@ -413,7 +456,7 @@ describe("Voxa-Dashbot plugin", () => {
         type: "customEvent",
         name: "CUSTOM EVENT",
         userId: "user-id",
-        conversationId: "some"
+        conversationId: "some",
       })
       .query(true)
       .reply(200, "MOCK DATA")
@@ -422,15 +465,15 @@ describe("Voxa-Dashbot plugin", () => {
       .query(true)
       .reply(200, "MOCK DATA");
 
-    const spy = simple.spy(async request => {
+    const spy = simple.spy(async (request) => {
       await request.dashbot.trackEvent({
         type: "customEvent",
-        name: "CUSTOM EVENT"
+        name: "CUSTOM EVENT",
       });
       return {
         say: "LaunchIntent.OpenResponse",
         flow: "yield",
-        to: "entry"
+        to: "entry",
       };
     });
 
@@ -439,18 +482,18 @@ describe("Voxa-Dashbot plugin", () => {
     const event = {
       request: {
         type: "LaunchRequest",
-        locale: "en-us"
+        locale: "en-us",
       },
       session: {
         new: true,
         sessionId: "some",
         application: {
-          applicationId: "appId"
+          applicationId: "appId",
         },
         user: {
-          userId: "user-id"
-        }
-      }
+          userId: "user-id",
+        },
+      },
     };
 
     register(voxaApp, dashbotConfig);
