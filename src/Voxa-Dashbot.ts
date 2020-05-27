@@ -22,14 +22,20 @@
 
 import DashbotAnalytics from "dashbot";
 import _ from "lodash";
-import { VoxaEvent, IVoxaEvent, IVoxaReply, VoxaApp, ITransition } from "voxa";
+import {
+  IVoxaEvent,
+  IVoxaReply,
+  VoxaApp,
+  ITransition,
+  GoogleAssistantEvent,
+} from "voxa";
 import rp from "request-promise";
 import {
   IDashbotRevenueEvent,
   IDashbotReferralEvent,
   IDashbotShareEvent,
   IDashbotPageLaunchEvent,
-  IDashbotCustomEvent
+  IDashbotCustomEvent,
 } from "./events";
 
 interface IOutgoingIntent {
@@ -43,14 +49,14 @@ interface IOutgoingInput {
 }
 
 const defaultConfig = {
-  ignoreUsers: []
+  ignoreUsers: [],
 };
 
 const dashbotIntegrations: any = {
   alexa: "alexa",
   botframework: "generic",
   dialogflow: "google", // DEPRECATED
-  google: "google"
+  google: "google",
 };
 
 export interface IVoxaDashbotConfig {
@@ -72,7 +78,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     debug: pluginConfig.debug,
     printErrors: pluginConfig.printErrors,
     redact: pluginConfig.redact,
-    timeout: pluginConfig.timeout
+    timeout: pluginConfig.timeout,
   };
 
   voxaApp.onRequestStarted(initDashbot);
@@ -134,7 +140,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
 
     let outgoingIntent: any = {};
     voxaEvent.dashbot = {
-      trackEvent: async function(
+      trackEvent: async function (
         dashbotEvent:
           | IDashbotRevenueEvent
           | IDashbotReferralEvent
@@ -146,8 +152,8 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
           ...dashbotEvent,
           ...{
             userId: voxaEvent.user.userId,
-            conversationId: voxaEvent.session.sessionId
-          }
+            conversationId: voxaEvent.session.sessionId,
+          },
         };
 
         await rp.post({
@@ -156,10 +162,10 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
             platform: dashbotIntegrations[platform.name],
             v: "11.1.0-rest",
             type: "event",
-            apiKey: apiKey
+            apiKey: apiKey,
           },
           json: true,
-          body: requestBody
+          body: requestBody,
         });
       },
 
@@ -233,6 +239,21 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
       };
     }
 
+    if (isGoogleAssistant(voxaEvent)) {
+      reply = _.merge({}, reply, {
+        payload: {
+          google: {
+            userStorage: JSON.stringify({
+              ...JSON.parse(voxaEvent.dialogflow.conv.user._serialize()),
+              dashbotUser: {
+                userId: voxaEvent.user.userId,
+              },
+            }),
+          },
+        },
+      });
+    }
+
     await Dashbot.logOutgoing(rawEvent, reply);
   }
 
@@ -249,4 +270,10 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
 
     return true;
   }
+}
+
+function isGoogleAssistant(
+  voxaEvent: IVoxaEvent
+): voxaEvent is GoogleAssistantEvent {
+  return voxaEvent.platform.name === "google";
 }
