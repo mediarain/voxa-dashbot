@@ -119,7 +119,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     "GameEngine.InputHandlerEvent",
     "Alexa.Presentation.APL.UserEvent",
     "Alexa.Presentation.APLT.UserEvent",
-    "Messaging.MessageReceived"
+    "Messaging.MessageReceived",
   ];
 
   for (const requestType of alexaRequestTypes) {
@@ -169,7 +169,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
         });
       },
 
-      addInputs: function(outgoingInputs) {
+      addInputs: function (outgoingInputs) {
         const input = _.get(outgoingInputs, "input");
 
         outgoingIntent.input = outgoingInputs;
@@ -181,7 +181,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
 
       get input() {
         return outgoingIntent.input;
-      }
+      },
     };
   }
 
@@ -233,9 +233,9 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
         ...{
           intent: {
             name: intent,
-            input
-          }
-        }
+            input,
+          },
+        },
       };
     }
 
