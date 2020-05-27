@@ -1,0 +1,102 @@
+{
+  "responseId": "221d2bb7-b3ca-43b7-88fd-bd2d33e98770-0f0e27e1",
+  "queryResult": {
+    "queryText": "GOOGLE_ASSISTANT_WELCOME",
+    "action": "input.welcome",
+    "parameters": {},
+    "allRequiredParamsPresent": true,
+    "outputContexts": [
+      {
+        "name": "projects/production/agent/sessions/ABwppHEAp9fwe5dVwOlnu0PUfdVS4jUNSerqiNB20yLtobiIB1dET4KEpFOPvTb-h9U05xP7Gyw9c_Wgve1QyAmxnw/contexts/actions_capability_audio_output"
+      },
+      {
+        "name": "projects/production/agent/sessions/ABwppHEAp9fwe5dVwOlnu0PUfdVS4jUNSerqiNB20yLtobiIB1dET4KEpFOPvTb-h9U05xP7Gyw9c_Wgve1QyAmxnw/contexts/actions_capability_account_linking"
+      },
+      {
+        "name": "projects/production/agent/sessions/ABwppHEAp9fwe5dVwOlnu0PUfdVS4jUNSerqiNB20yLtobiIB1dET4KEpFOPvTb-h9U05xP7Gyw9c_Wgve1QyAmxnw/contexts/actions_capability_screen_output"
+      },
+      {
+        "name": "projects/production/agent/sessions/ABwppHEAp9fwe5dVwOlnu0PUfdVS4jUNSerqiNB20yLtobiIB1dET4KEpFOPvTb-h9U05xP7Gyw9c_Wgve1QyAmxnw/contexts/actions_capability_media_response_audio"
+      },
+      {
+        "name": "projects/production/agent/sessions/ABwppHEAp9fwe5dVwOlnu0PUfdVS4jUNSerqiNB20yLtobiIB1dET4KEpFOPvTb-h9U05xP7Gyw9c_Wgve1QyAmxnw/contexts/google_assistant_input_type_voice"
+      },
+      {
+        "name": "projects/production/agent/sessions/ABwppHEAp9fwe5dVwOlnu0PUfdVS4jUNSerqiNB20yLtobiIB1dET4KEpFOPvTb-h9U05xP7Gyw9c_Wgve1QyAmxnw/contexts/google_assistant_welcome"
+      },
+      {
+        "name": "projects/production/agent/sessions/ABwppHEAp9fwe5dVwOlnu0PUfdVS4jUNSerqiNB20yLtobiIB1dET4KEpFOPvTb-h9U05xP7Gyw9c_Wgve1QyAmxnw/contexts/__system_counters__",
+        "parameters": {
+          "no-input": 0,
+          "no-match": 0
+        }
+      }
+    ],
+    "intent": {
+      "name": "projects/production/agent/intents/42842181-fbf0-583d-b9b4-6e58ca57ba5a",
+      "displayName": "Default Welcome Intent"
+    },
+    "intentDetectionConfidence": 1,
+    "languageCode": "de"
+  },
+  "originalDetectIntentRequest": {
+    "source": "google",
+    "version": "2",
+    "payload": {
+      "user": {
+        "locale": "de-DE",
+        "lastSeen": "2020-05-20T16:24:10Z",
+        "userVerificationStatus": "VERIFIED"
+      },
+      "conversation": {
+        "conversationId": "ABwppHEAp9fwe5dVwOlnu0PUfdVS4jUNSerqiNB20yLtobiIB1dET4KEpFOPvTb-h9U05xP7Gyw9c_Wgve1QyAmxnw",
+        "type": "NEW"
+      },
+      "inputs": [
+        {
+          "intent": "actions.intent.MAIN",
+          "rawInputs": [
+            {
+              "inputType": "VOICE",
+              "query": "Mit test app sprechen"
+            }
+          ]
+        }
+      ],
+      "surface": {
+        "capabilities": [
+          {
+            "name": "actions.capability.AUDIO_OUTPUT"
+          },
+          {
+            "name": "actions.capability.ACCOUNT_LINKING"
+          },
+          {
+            "name": "actions.capability.SCREEN_OUTPUT"
+          },
+          {
+            "name": "actions.capability.MEDIA_RESPONSE_AUDIO"
+          }
+        ]
+      },
+      "isInSandbox": true,
+      "availableSurfaces": [
+        {
+          "capabilities": [
+            {
+              "name": "actions.capability.SCREEN_OUTPUT"
+            },
+            {
+              "name": "actions.capability.AUDIO_OUTPUT"
+            },
+            {
+              "name": "actions.capability.WEB_BROWSER"
+            }
+          ]
+        }
+      ],
+      "requestType": "SIMULATOR"
+    }
+  },
+  "session": "projects/production/agent/sessions/ABwppHEAp9fwe5dVwOlnu0PUfdVS4jUNSerqiNB20yLtobiIB1dET4KEpFOPvTb-h9U05xP7Gyw9c_Wgve1QyAmxnw"
+}
