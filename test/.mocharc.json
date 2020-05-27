@@ -1,1 +1,7 @@
-{}
+{
+  "require": "ts-node/register",
+  "watch-ignore": ["reports", "node_modules", ".git"],
+  "extension": "ts,js,json",
+  "recursive": true,
+  "colors": true
+}

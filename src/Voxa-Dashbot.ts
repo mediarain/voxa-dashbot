@@ -22,7 +22,13 @@
 
 import DashbotAnalytics from "dashbot";
 import _ from "lodash";
-import { IVoxaEvent, IVoxaReply, VoxaApp, ITransition } from "voxa";
+import {
+  IVoxaEvent,
+  IVoxaReply,
+  VoxaApp,
+  ITransition,
+  GoogleAssistantEvent,
+} from "voxa";
 import rp from "request-promise";
 import {
   IDashbotRevenueEvent,
@@ -196,6 +202,21 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
       };
     }
 
+    if (isGoogleAssistant(voxaEvent)) {
+      reply = _.merge({}, reply, {
+        payload: {
+          google: {
+            userStorage: JSON.stringify({
+              ...JSON.parse(voxaEvent.dialogflow.conv.user._serialize()),
+              dashbotUser: {
+                userId: voxaEvent.user.userId,
+              },
+            }),
+          },
+        },
+      });
+    }
+
     voxaEvent.dashbot!.promises.push(Dashbot.logOutgoing(rawEvent, reply));
     return Promise.all(voxaEvent.dashbot!.promises);
   }
@@ -213,4 +234,10 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
 
     return true;
   }
+}
+
+function isGoogleAssistant(
+  voxaEvent: IVoxaEvent
+): voxaEvent is GoogleAssistantEvent {
+  return voxaEvent.platform.name === "google";
 }
