@@ -43,4 +43,7 @@ export interface IDashbot {
       | IDashbotShareEvent
       | IDashbotReferralEvent
   ) => Promise<any>;
+
+  addInputs: (outgoingInputs: any) => void;
+  input;
 }

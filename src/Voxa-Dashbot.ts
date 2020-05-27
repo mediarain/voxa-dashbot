@@ -38,6 +38,16 @@ import {
   IDashbotCustomEvent,
 } from "./events";
 
+interface IOutgoingIntent {
+  name?: string;
+  input: IOutgoingInput[];
+}
+
+interface IOutgoingInput {
+  name: string;
+  value: string;
+}
+
 const defaultConfig = {
   ignoreUsers: [],
 };
@@ -73,7 +83,15 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
 
   voxaApp.onRequestStarted(initDashbot);
   voxaApp.onRequestStarted(trackIncoming);
-  voxaApp.onBeforeReplySent(trackOutgoing);
+  voxaApp.onBeforeReplySent(async (voxaEvent, reply, transition) => {
+    let input;
+
+    if (voxaEvent.dashbot) {
+      input = voxaEvent.dashbot.input;
+    }
+
+    await trackOutgoing(voxaEvent, reply, transition, input);
+  });
 
   const alexaRequestTypes = [
     "AudioPlayer.PlaybackStarted",
@@ -100,6 +118,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     "CanFulfillIntentRequest",
     "GameEngine.InputHandlerEvent",
     "Alexa.Presentation.APL.UserEvent",
+    "Alexa.Presentation.APLT.UserEvent",
     "Messaging.MessageReceived",
   ];
 
@@ -119,6 +138,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     const { platform } = voxaEvent;
     const apiKey = _.get(pluginConfig, platform.name) || pluginConfig.api_key;
 
+    let outgoingIntent: any = {};
     voxaEvent.dashbot = {
       promises: [],
       trackEvent: async function (
@@ -151,6 +171,20 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
           })
         );
       },
+
+      addInputs: function (outgoingInputs) {
+        const input = _.get(outgoingInputs, "input");
+
+        outgoingIntent.input = outgoingInputs;
+
+        if (input) {
+          outgoingIntent.input = input;
+        }
+      },
+
+      get input() {
+        return outgoingIntent.input;
+      },
     };
   }
 
@@ -172,7 +206,8 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
   async function trackOutgoing(
     voxaEvent: IVoxaEvent,
     reply: IVoxaReply,
-    transition?: ITransition
+    transition?: ITransition,
+    input?: any
   ) {
     if (!shouldTrack(voxaEvent)) {
       return;
@@ -191,12 +226,17 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
         says = [transition.say];
       }
 
+      if (_.isPlainObject(input)) {
+        input = [input];
+      }
+
       const intent = says.join(",");
       reply = {
         ...reply,
         ...{
           intent: {
             name: intent,
+            input,
           },
         },
       };
