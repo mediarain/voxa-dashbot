@@ -200,7 +200,9 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
       dashbotIntegrations[platform.name]
     ];
 
-    voxaEvent.dashbot!.promises.push(Dashbot.logIncoming(rawEvent));
+    voxaEvent.dashbot!.promises.push(
+      Dashbot.logIncoming(augmentDashbotIncomingEvent(voxaEvent, rawEvent))
+    );
   }
 
   async function trackOutgoing(
@@ -242,22 +244,12 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
       };
     }
 
-    if (isGoogleAssistant(voxaEvent)) {
-      reply = _.merge({}, reply, {
-        payload: {
-          google: {
-            userStorage: JSON.stringify({
-              ...JSON.parse(voxaEvent.dialogflow.conv.user._serialize()),
-              dashbotUser: {
-                userId: voxaEvent.user.userId,
-              },
-            }),
-          },
-        },
-      });
-    }
-
-    voxaEvent.dashbot!.promises.push(Dashbot.logOutgoing(rawEvent, reply));
+    voxaEvent.dashbot!.promises.push(
+      Dashbot.logOutgoing(
+        augmentDashbotIncomingEvent(voxaEvent, rawEvent),
+        augmentDashbotOutgoingEvent(voxaEvent, reply)
+      )
+    );
     return Promise.all(voxaEvent.dashbot!.promises);
   }
 
@@ -274,6 +266,53 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
 
     return true;
   }
+}
+
+function augmentDashbotIncomingEvent(
+  voxaEvent: IVoxaEvent,
+  dashbotIncomingEvent: any
+) {
+  if (isGoogleAssistant(voxaEvent)) {
+    const userStorage = _.get(
+      dashbotIncomingEvent,
+      "originalDetectIntentRequest.payload.user.userStorage"
+    );
+    dashbotIncomingEvent = _.merge({}, dashbotIncomingEvent, {
+      originalDetectIntentRequest: {
+        payload: {
+          user: {
+            userStorage: JSON.stringify({
+              ...(userStorage ? JSON.parse(userStorage) : {}),
+              dashbotUser: {
+                userId: voxaEvent.user.userId,
+              },
+            }),
+          },
+        },
+      },
+    });
+  }
+
+  return dashbotIncomingEvent;
+}
+
+function augmentDashbotOutgoingEvent(voxaEvent: IVoxaEvent, reply: any) {
+  if (isGoogleAssistant(voxaEvent)) {
+    reply = _.merge({}, reply, {
+      payload: {
+        google: {
+          userStorage: JSON.stringify({
+            ...JSON.parse(voxaEvent.dialogflow.conv.user._serialize()),
+            dashbotUser: {
+              userId: voxaEvent.user.userId,
+            },
+          }),
+        },
+      },
+    });
+  }
+
+  return reply;
 }
 
 function isGoogleAssistant(
