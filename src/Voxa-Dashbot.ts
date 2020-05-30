@@ -30,6 +30,7 @@ import {
   GoogleAssistantEvent,
 } from "voxa";
 import rp from "request-promise";
+import { Response } from "request";
 import {
   IDashbotRevenueEvent,
   IDashbotReferralEvent,
@@ -50,6 +51,7 @@ interface IOutgoingInput {
 
 const defaultConfig = {
   ignoreUsers: [],
+  timeout: 15000,
 };
 
 const dashbotIntegrations: any = {
@@ -60,6 +62,7 @@ const dashbotIntegrations: any = {
 };
 
 export interface IVoxaDashbotConfig {
+  ignoreUsers: (string | RegExp)[];
   alexa?: string;
   api_key?: string;
   botframework?: string;
@@ -72,7 +75,7 @@ export interface IVoxaDashbotConfig {
 }
 
 export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
-  const pluginConfig = _.merge({}, defaultConfig, config);
+  const pluginConfig: IVoxaDashbotConfig = _.merge({}, defaultConfig, config);
 
   const dashbotConfig = {
     debug: pluginConfig.debug,
@@ -157,7 +160,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
           },
         };
 
-        voxaEvent.dashbot!.promises.push(
+        let p: Promise<Response | void> = Promise.resolve(
           rp.post({
             uri: "https://tracker.dashbot.io/track",
             qs: {
@@ -168,8 +171,24 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
             },
             json: true,
             body: requestBody,
+            timeout: pluginConfig.timeout,
           })
         );
+
+        if (pluginConfig.printErrors) {
+          p = p.then(async (response: Response) => {
+            if (response.statusCode === 400) {
+              voxaEvent.log.error(response.body);
+            }
+            return response;
+          });
+        } else {
+          p = p.catch((_err: any) => {
+            // ignore
+          });
+        }
+
+        voxaEvent.dashbot!.promises.push(p);
       },
 
       addInputs: function (outgoingInputs) {
@@ -211,7 +230,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     transition?: ITransition,
     input?: any
   ) {
-    if (!shouldTrack(voxaEvent)) {
+    if (!shouldTrack(voxaEvent) || !voxaEvent.dashbot) {
       return;
     }
 
@@ -250,7 +269,8 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
         augmentDashbotOutgoingEvent(voxaEvent, reply)
       )
     );
-    return Promise.all(voxaEvent.dashbot!.promises);
+
+    return Promise.all(voxaEvent.dashbot.promises);
   }
 
   function shouldTrack(voxaEvent: IVoxaEvent): boolean {
