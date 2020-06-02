@@ -30,6 +30,7 @@ import {
   GoogleAssistantEvent,
 } from "voxa";
 import rp from "request-promise";
+import { Response } from "request";
 import {
   IDashbotRevenueEvent,
   IDashbotReferralEvent,
@@ -50,6 +51,7 @@ interface IOutgoingInput {
 
 const defaultConfig = {
   ignoreUsers: [],
+  timeout: 15000,
 };
 
 const dashbotIntegrations: any = {
@@ -60,6 +62,7 @@ const dashbotIntegrations: any = {
 };
 
 export interface IVoxaDashbotConfig {
+  ignoreUsers: (string | RegExp)[];
   alexa?: string;
   api_key?: string;
   botframework?: string;
@@ -72,7 +75,7 @@ export interface IVoxaDashbotConfig {
 }
 
 export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
-  const pluginConfig = _.merge({}, defaultConfig, config);
+  const pluginConfig: IVoxaDashbotConfig = _.merge({}, defaultConfig, config);
 
   const dashbotConfig = {
     debug: pluginConfig.debug,
@@ -157,7 +160,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
           },
         };
 
-        voxaEvent.dashbot!.promises.push(
+        let p: Promise<Response | void> = Promise.resolve(
           rp.post({
             uri: "https://tracker.dashbot.io/track",
             qs: {
@@ -168,8 +171,24 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
             },
             json: true,
             body: requestBody,
+            timeout: pluginConfig.timeout,
           })
         );
+
+        if (pluginConfig.printErrors) {
+          p = p.then(async (response: Response) => {
+            if (response.statusCode === 400) {
+              voxaEvent.log.error(response.body);
+            }
+            return response;
+          });
+        } else {
+          p = p.catch((_err: any) => {
+            // ignore
+          });
+        }
+
+        voxaEvent.dashbot!.promises.push(p);
       },
 
       addInputs: function (outgoingInputs) {
@@ -200,7 +219,9 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
       dashbotIntegrations[platform.name]
     ];
 
-    voxaEvent.dashbot!.promises.push(Dashbot.logIncoming(rawEvent));
+    voxaEvent.dashbot!.promises.push(
+      Dashbot.logIncoming(augmentDashbotIncomingEvent(voxaEvent, rawEvent))
+    );
   }
 
   async function trackOutgoing(
@@ -209,7 +230,7 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     transition?: ITransition,
     input?: any
   ) {
-    if (!shouldTrack(voxaEvent)) {
+    if (!shouldTrack(voxaEvent) || !voxaEvent.dashbot) {
       return;
     }
 
@@ -242,23 +263,14 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
       };
     }
 
-    if (isGoogleAssistant(voxaEvent)) {
-      reply = _.merge({}, reply, {
-        payload: {
-          google: {
-            userStorage: JSON.stringify({
-              ...JSON.parse(voxaEvent.dialogflow.conv.user._serialize()),
-              dashbotUser: {
-                userId: voxaEvent.user.userId,
-              },
-            }),
-          },
-        },
-      });
-    }
+    voxaEvent.dashbot!.promises.push(
+      Dashbot.logOutgoing(
+        augmentDashbotIncomingEvent(voxaEvent, rawEvent),
+        augmentDashbotOutgoingEvent(voxaEvent, reply)
+      )
+    );
 
-    voxaEvent.dashbot!.promises.push(Dashbot.logOutgoing(rawEvent, reply));
-    return Promise.all(voxaEvent.dashbot!.promises);
+    return Promise.all(voxaEvent.dashbot.promises);
   }
 
   function shouldTrack(voxaEvent: IVoxaEvent): boolean {
@@ -274,6 +286,53 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
 
     return true;
   }
+}
+
+function augmentDashbotIncomingEvent(
+  voxaEvent: IVoxaEvent,
+  dashbotIncomingEvent: any
+) {
+  if (isGoogleAssistant(voxaEvent)) {
+    const userStorage = _.get(
+      dashbotIncomingEvent,
+      "originalDetectIntentRequest.payload.user.userStorage"
+    );
+    dashbotIncomingEvent = _.merge({}, dashbotIncomingEvent, {
+      originalDetectIntentRequest: {
+        payload: {
+          user: {
+            userStorage: JSON.stringify({
+              ...(userStorage ? JSON.parse(userStorage) : {}),
+              dashbotUser: {
+                userId: voxaEvent.user.userId,
+              },
+            }),
+          },
+        },
+      },
+    });
+  }
+
+  return dashbotIncomingEvent;
+}
+
+function augmentDashbotOutgoingEvent(voxaEvent: IVoxaEvent, reply: any) {
+  if (isGoogleAssistant(voxaEvent)) {
+    reply = _.merge({}, reply, {
+      payload: {
+        google: {
+          userStorage: JSON.stringify({
+            ...JSON.parse(voxaEvent.dialogflow.conv.user._serialize()),
+            dashbotUser: {
+              userId: voxaEvent.user.userId,
+            },
+          }),
+        },
+      },
+    });
+  }
+
+  return reply;
 }
 
 function isGoogleAssistant(
