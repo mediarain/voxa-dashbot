@@ -62,7 +62,7 @@
     "voxa": "^3.3.2"
   },
   "peerDependencies": {
-    "voxa": "^3.3.0"
+    "voxa": "^3.3.2"
   },
   "bugs": {
     "url": "https://github.com/VoxaAI/voxa-dashbot/issues"
