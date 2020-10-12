@@ -61,6 +61,7 @@ const dashbotIntegrations: any = {
 
 export interface IVoxaDashbotConfig {
   alexa?: string;
+  alexaLogGroup?: string;
   api_key?: string;
   botframework?: string;
   debug?: boolean;
@@ -83,15 +84,21 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
 
   voxaApp.onRequestStarted(initDashbot);
   voxaApp.onRequestStarted(trackIncoming);
-  voxaApp.onBeforeReplySent(async (voxaEvent, reply, transition) => {
-    let input;
+  voxaApp.onBeforeReplySent(
+    async (
+      voxaEvent: IVoxaEvent,
+      reply: IVoxaReply,
+      transition: ITransition
+    ) => {
+      let input: any;
 
-    if (voxaEvent.dashbot) {
-      input = voxaEvent.dashbot.input;
+      if (voxaEvent.dashbot) {
+        input = voxaEvent.dashbot.input;
+      }
+
+      await trackOutgoing(voxaEvent, reply, transition, input);
     }
-
-    await trackOutgoing(voxaEvent, reply, transition, input);
-  });
+  );
 
   const alexaRequestTypes = [
     "AudioPlayer.PlaybackStarted",
@@ -196,9 +203,16 @@ export function register(voxaApp: VoxaApp, config: IVoxaDashbotConfig) {
     const { rawEvent, platform } = voxaEvent;
     const apiKey = _.get(pluginConfig, platform.name) || pluginConfig.api_key;
 
-    const Dashbot = DashbotAnalytics(apiKey, dashbotConfig)[
-      dashbotIntegrations[platform.name]
-    ];
+    let Dashbot: any;
+    if (platform.name === "alexa" && pluginConfig.alexaLogGroup) {
+      Dashbot = DashbotAnalytics(apiKey, dashbotConfig).alexa.logIntegration({
+        logGroupName: pluginConfig.alexaLogGroup,
+      });
+    } else {
+      Dashbot = DashbotAnalytics(apiKey, dashbotConfig)[
+        dashbotIntegrations[platform.name]
+      ];
+    }
 
     voxaEvent.dashbot!.promises.push(Dashbot.logIncoming(rawEvent));
   }

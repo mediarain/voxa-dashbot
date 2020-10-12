@@ -92,13 +92,13 @@ describe("Voxa-Dashbot plugin", () => {
       input: [
         {
           name: "demo a",
-          value: "another a"
+          value: "another a",
         },
         {
           name: "demo b",
-          value: "another b"
-        }
-      ]
+          value: "another b",
+        },
+      ],
     };
 
     nock.cleanAll();
@@ -109,17 +109,16 @@ describe("Voxa-Dashbot plugin", () => {
       .reply(200, "MOCK DATA")
 
       // logOutgoing
-      .post("/track", body => {
+      .post("/track", (body) => {
         return (
           JSON.stringify(body.response.intent.input) ===
           JSON.stringify(customProps.input)
         );
       })
       .query(true)
-      .reply(200, "MOCK DATA")
-      .log(console.log);
+      .reply(200, "MOCK DATA");
 
-    const spy = simple.spy(request => {
+    const spy = simple.spy((request) => {
       request.dashbot.addInputs(customProps);
       return { say: "LaunchIntent.OpenResponse", flow: "yield", to: "entry" };
     });
@@ -129,18 +128,18 @@ describe("Voxa-Dashbot plugin", () => {
     const event = {
       request: {
         type: "LaunchRequest",
-        locale: "en-us"
+        locale: "en-us",
       },
       session: {
         new: true,
         sessionId: "some",
         application: {
-          applicationId: "appId"
+          applicationId: "appId",
         },
         user: {
-          userId: "user-id"
-        }
-      }
+          userId: "user-id",
+        },
+      },
     };
 
     try {
@@ -161,7 +160,7 @@ describe("Voxa-Dashbot plugin", () => {
   it("should be setting the outgoing intent with simple input", async () => {
     const customProps = {
       name: "demo name",
-      value: "another value"
+      value: "another value",
     };
 
     nock.cleanAll();
@@ -172,17 +171,16 @@ describe("Voxa-Dashbot plugin", () => {
       .reply(200, "MOCK DATA")
 
       // logOutgoing
-      .post("/track", body => {
+      .post("/track", (body) => {
         return (
           JSON.stringify(body.response.intent.input) ===
           JSON.stringify([customProps])
         );
       })
       .query(true)
-      .reply(200, "MOCK DATA")
-      .log(console.log);
+      .reply(200, "MOCK DATA");
 
-    const spy = simple.spy(request => {
+    const spy = simple.spy((request) => {
       request.dashbot.addInputs(customProps);
       return { say: "LaunchIntent.OpenResponse", flow: "yield", to: "entry" };
     });
@@ -192,18 +190,18 @@ describe("Voxa-Dashbot plugin", () => {
     const event = {
       request: {
         type: "LaunchRequest",
-        locale: "en-us"
+        locale: "en-us",
       },
       session: {
         new: true,
         sessionId: "some",
         application: {
-          applicationId: "appId"
+          applicationId: "appId",
         },
         user: {
-          userId: "user-id"
-        }
-      }
+          userId: "user-id",
+        },
+      },
     };
 
     try {
